@@ -1,7 +1,7 @@
 #Constructing Cactus
 #
 #written by Keita Watanabe, Waseda university
-#2023.8.22
+#2023.11.9
 #
 #
 import sys
@@ -20,10 +20,10 @@ def readcsv(filename):
         reader = csv.reader(file)
         for i, row in enumerate(reader):
             if i == 0:
-                # First row is size of matrix
+                #First row is size of matrix
                 n = int(row[0])
                 continue
-            # Add the data from the second line to a distance matrix
+            #Add the data from the second line to a distance matrix
             distance_matrix.append([float(value) for value in row])
     return n, np.array(distance_matrix)
 
@@ -55,15 +55,18 @@ def comp(V, x):
     
     return min_val, min_comb    
 
-#Function Compactification (Tightening)
+##Function Compactification (Tightening)
 #Determine how much each vertex "extends" from the set of other vertices using tightening (Compactification).
 def Compactification(V):
     global D
     global VertexNum
     global V_del
     global AllVertices
+    global Adj
+    global Adj_opt
     V_aux = set()
 
+    print(V)
     if len(V)<=2:
         mkAdj(V)
         return
@@ -116,6 +119,11 @@ def Compactification(V):
                 AllVertices.add(aux)
 
     if VertexNum_tmp==VertexNum and doEnd==1:
+        for x,y in itertools.permutations(V,2):
+            if Adj[x,y]==1:
+                Adj[x,y] = 0
+                Adj_opt[x,y] = 1
+        V_del = V_del.union(V)
         return
     
     mkAdj(V.union(V_aux))
@@ -134,6 +142,7 @@ def CountNeighbor(x):
 
 
 #Function CountOptNeighbor
+#Count neighbor of x in optimal realization
 def CountOptNeighbor(x):
     global Adj_opt
     NeighborNum = 0
@@ -143,7 +152,7 @@ def CountOptNeighbor(x):
     return NeighborNum
 
 
-#Funktion makeAdjacent
+#Function makeAdjacent
 def mkAdj(V):
     global D
     global V_del
@@ -161,16 +170,17 @@ def mkAdj(V):
                 Adj_opt = np.append(Adj_opt, np.zeros((1, Adj_opt.shape[0])), axis=0)
                 Adj_opt = np.append(Adj_opt, np.zeros((Adj_opt.shape[0], 1)), axis=1)
         
-    for x, y in itertools.permutations(V,2): #Regard x and y as adjacent
+    for x, y in itertools.permutations(V,2):#Regard x and y as adjacent
         Adj[x,y] = 1
-    for x, y, z in itertools.permutations(AllVertices,3): #Remove the edges that turns out to be non-adjacent
-        if D[x,y]+D[x,z] == D[y,z]:
-            Adj[y,z] = 0
+        for z in AllVertices-{x,y}: #Remove the edges that turns out to be non-adjacent
+            if D[x,z]+D[z,y] == D[x,y]:
+                Adj[x,y] = 0
 
 
     isDeleted = 0
 
     for x in V:
+        print(x,CountNeighbor(x))
         if CountNeighbor(x)==0:
             isDeleted = 1
             V_del.add(x)
@@ -203,7 +213,7 @@ def mkAdj(V):
             if Adj[x,y]==1:
                 Adj[x,y] = 0
                 Adj_opt[x,y] = 1
-            V_del = V_del.union({x,y})
+        V_del = V_del.union(V)
         return
 
     
@@ -223,6 +233,7 @@ def mkAdj(V):
 
 
 #Function Slack
+#Find all verticies
 def Slack(V):
     global D
     global V_del
@@ -273,7 +284,7 @@ elif mode == "stdin":#standard input mode
     print("Input n:",end=" ")
     n = int(input()) #Input size of distance matrix
     print("Input Distance Matrix: ")
-    D_list = [list(map(float, input().split())) for i in range(n)] #Add the data from the second line to a distance matrix
+    D_list = [list(map(float, input().split())) for i in range(n)] #2行目以降標準入力
     D = np.array(D_list)
 else:
     print("erorr")
