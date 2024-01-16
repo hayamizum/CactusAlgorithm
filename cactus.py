@@ -1,7 +1,7 @@
 #Constructing Cactus
 #
 #written by Keita Watanabe, Waseda university
-#2023.12.19
+#2023.1.16
 #
 #
 import sys
@@ -101,9 +101,6 @@ def Compactification(V):
     if len(V)<=2:
         mkAdj(V)
         return
-    
-    VertexNum_tmp = VertexNum
-    doEnd = 0
 
     for x in V:
         index, (y, z) = comp(V,x)
@@ -183,7 +180,7 @@ def mkAdj(V):
         Adj[x,y] = 1
         for z in V-{x,y}: #隣接していないものを切る
             if D[x,z]+D[z,y] == D[x,y] and D[x,z] != 0 and D[z,y] != 0:
-                Adj[x,y] = 0
+                Adj[x,y] = Adj[y,x] = 0
 
 
     isDeleted = 0
@@ -219,8 +216,8 @@ def mkAdj(V):
     if isDeleted==0:
         for x,y in itertools.permutations(V.difference(V_del),2):
             if Adj[x,y]==1:
-                Adj[x,y] = 0
-                Adj_opt[x,y] = 1
+                Adj[x,y] = Adj[y,x] = 0
+                Adj_opt[x,y] = Adj_opt[y,x] = 1
         V_del = V_del.union(V)
         return
 
@@ -236,8 +233,8 @@ def mkAdj(V):
         if len(connect)==2:
             x,y = connect
             if Adj[x,y]==1:
-                Adj[x,y] = 0
-                Adj_opt[x,y] = 1
+                Adj[x,y] = Adj[y,x] = 0
+                Adj_opt[x,y] = Adj_opt[y,x] = 1
             V_del = V_del.union({x,y})
 
         if len(connect)>2:
@@ -272,10 +269,10 @@ def Slack(V):
     Set_of_Neighbor = set()
 
     for x in V_tmp:
-        if CountNeighbor(x, Adj_opt_tmp)<=2:
+        if CountNeighbor(x, Adj_opt_tmp)<=1:
             Slack_del.add(x)
             continue
-        elif CountNeighbor(x, Adj_opt_tmp)>=3:
+        elif CountNeighbor(x, Adj_opt_tmp)>=2:
             Neighbor = set()
             for i in range(len(Adj_opt_tmp)):
                 if Adj_opt_tmp[x,i]==1:
@@ -284,7 +281,7 @@ def Slack(V):
             Slack_del.add(x)
             Set_of_Neighbor.add(frozenset(Neighbor))
             for y,z in itertools.permutations(Neighbor,2):
-                Adj_opt[y,z] = 0
+                Adj_opt[y,z] = Adj_opt[z,y] = 0
 
     for Neighbor in Set_of_Neighbor:
         Compactification(Neighbor)
@@ -362,7 +359,7 @@ for x, y in itertools.permutations(AllVertices,2): #完全グラフの隣接関�
     Adj_opt[x,y] = 1
     for z in AllVertices-{x,y}: #隣接していないものを切る
         if D[x,z]+D[z,y] == D[x,y] and D[x,z] != 0 and D[z,y] != 0:
-            Adj_opt[x,y] = 0
+            Adj_opt[x,y] = Adj_opt[y,x] =0
 
 #Graphの定義
 G = nx.Graph(Adj_opt)
