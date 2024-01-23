@@ -1,4 +1,3 @@
-```markdown
 # Project Introduction
 
 This project aims at graph realization of a given two-dimensional distance matrix. A distance matrix contains the distances between all object pairs. For example, if a distance matrix of 10 objects is given, then there should be 10×10 elements. A realization is a graph G(V,E) whose shortest path distances between all pairs of objects are the same as given in the distance matrix. This project focuses on building a minimum realization with the minimum sum of all edges in the graph.
