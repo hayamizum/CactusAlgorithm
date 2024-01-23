@@ -58,3 +58,5 @@ Input Distance Matrix:
 ```
 
 The result should be a picture of a cube with every edge in weight 1. Also, a result about whether the generated graph is the realization of the given distance matrix is shown as True or False.
+![image](https://github.com/keita1126/CactusAlgorithm/assets/31284538/7ed85f02-f9ba-46c3-b171-0a8f417fea2a)
+
