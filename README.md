@@ -1,6 +1,6 @@
 # Project Introduction
 
-This project aims at graph realization of a given two-dimensional distance matrix. A distance matrix contains the distances between all object pairs. For example, if a distance matrix of 10 objects is given, then there should be 10×10 elements. A realization is a graph G(V,E) whose shortest path distances between all pairs of objects are the same as given in the distance matrix. This project focuses on building a minimum realization with the minimum sum of all edges in the graph.
+This project aims at computing a graph realization of a given distance matrix. A distance matrix contains the distances between all object pairs. For example, if a distance matrix of 10 objects is given, then there should be 10×10 elements. A realization is a graph G(V,E) whose shortest path distances between all pairs of objects are the same as given in the distance matrix. In the case when the input distances are realized by a cactus graph or a fully labeled graph, the program outputs its unique optimal realization (i.e., a realization that minimizes the sum of edge-weights of all edges of the graph).
 
 This project is written in Python and can be run in a Python environment.
 
