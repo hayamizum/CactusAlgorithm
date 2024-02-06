@@ -39,6 +39,12 @@ To run this project, you may require the following packages:
 When running the code, there are two modes for input dataset: csv or stdin.
 
 For csv mode, it is required to provide the dataset by csv format file. A path of absolute path or relative path is needed for searching the file.
+
+The csv file contains n+1 lines, in which n represents the number of objects, and should follow the criterias below:
+
+- in the first line, the number of objects n should be given, like 5.
+- in the following n lines, the distance matrix should be given, with n numbers every line.
+
 As an example, a file called 'manhattan_distances_20x20.csv' which contains L1 distance (Manhattan Distance) matrix of 20 random points in a 20*20 grid is given. By following the instruction below, a graph containing the exact description of distance matrix is shown. 
 ```
 csv or stdin:csv
