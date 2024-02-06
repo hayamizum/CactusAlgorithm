@@ -19,7 +19,7 @@ To run this project, use:
 python cactus.py
 ```
 
-and follow the instructions in Input/Output.
+and follow the instructions in tutorial.
 
 ## Prerequisites
 
@@ -34,11 +34,26 @@ To run this project, you may require the following packages:
 - csv
 - pandas
 
-## Inputs/Outputs
+## Tutorial
 
 When running the code, there are two modes for input dataset: csv or stdin.
 
 For csv mode, it is required to provide the dataset by csv format file. A path of absolute path or relative path is needed for searching the file.
+As an example, a file called 'manhattan_distances_20x20.csv' which contains L1 distance (Manhattan Distance) matrix of 20 random points in a 20*20 grid is given. By following the instruction below, a graph containing the exact description of distance matrix is shown. 
+```
+csv or stdin:csv
+File Name:manhattan_distances_20x20.csv
+```
+The graph should be like this.
+<img width="565" alt="Untitled (3)" src="https://github.com/keita1126/CactusAlgorithm/assets/31284538/6a0229ff-2cd6-4aeb-a2c4-7a1297d80ea5">
+
+The original distribution of points is this:
+![Untitled (2)](https://github.com/keita1126/CactusAlgorithm/assets/31284538/acefae24-8ed6-47cb-b2e9-9a5dd6a1eaec)
+
+
+
+
+
 
 For stdin mode, it is required to input the dataset manually. The first parameter is about the number of objects n. Then the input distance matrix including n×n elements is required, and the data should use white space and Enter to distinguish elements.
 
