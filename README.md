@@ -45,6 +45,7 @@ csv or stdin:csv
 File Name:manhattan_distances_20x20.csv
 ```
 The graph should be like this.
+
 <img width="565" alt="Untitled (3)" src="https://github.com/keita1126/CactusAlgorithm/assets/31284538/6a0229ff-2cd6-4aeb-a2c4-7a1297d80ea5">
 
 The original distribution of points is this:
