@@ -50,7 +50,7 @@ As an example, a file called 'manhattan_distances_20x20.csv' which contains L1 d
 csv or stdin:csv
 File Name:manhattan_distances_20x20.csv
 ```
-The graph should be like this.
+The graph should be like this (for the simplicity, I manually chose not to show the weights of edges, but the result should contain. Also, the picture is mirror flipped and rotated, but the structure does not change).
 
 <img width="565" alt="Untitled (3)" src="https://github.com/keita1126/CactusAlgorithm/assets/31284538/6a0229ff-2cd6-4aeb-a2c4-7a1297d80ea5">
 
