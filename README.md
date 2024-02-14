@@ -54,7 +54,7 @@ The graph should be like this (for the simplicity, I manually chose not to show 
 
 <img width="565" alt="Untitled (3)" src="https://github.com/keita1126/CactusAlgorithm/assets/31284538/6a0229ff-2cd6-4aeb-a2c4-7a1297d80ea5">
 
-The original distribution of points is this:
+The original distribution of points is this (you can use generate_random_integer_points.py to generate the random points yourself):
 ![Untitled (2)](https://github.com/keita1126/CactusAlgorithm/assets/31284538/acefae24-8ed6-47cb-b2e9-9a5dd6a1eaec)
 
 
