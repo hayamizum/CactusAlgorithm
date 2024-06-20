@@ -1,6 +1,6 @@
 # Project Introduction
 
-This project aims at computing a graph realization of a given distance matrix. A distance matrix contains the distances between all object pairs. For example, if a distance matrix of 10 objects is given, then there should be 10×10 elements. A realization is a graph G = (V,E) whose shortest path distances d_G between all pairs of objects in V are the same as given in the distance matrix. In the case when the input distance matrix can be realized by a cactus graph or a fully labeled graph, the program outputs its unique optimal realization (i.e., a realization that minimizes the sum of edge-weights of all edges of the graph).
+This project aims at computing a weighted graph that (exactly or approximately) realizes a given distance matrix. For a distance matrix D on a set X of n objects, a realization of D is defined to be a weighted graph G = (V,E; w) such that X is a subset of V and for any two elements x_i, x_j in X, the shortest path distance d_G between x_i and x_j equals to the input pairwise distance D(x_i,x_j). In the case when D can be realized by a cactus graph or a fully labeled graph, the code outputs a (unique) optimal realization of D (i.e., an exact realization that minimizes the sum of the edge-weights).
 
 This project is written in Python and can be run in a Python environment.
 
@@ -36,35 +36,32 @@ To run this project, you may require the following packages:
 
 ## Tutorial
 
-When running the code, there are two modes for input dataset: csv or stdin.
+When running the code, you can input a distance matrix in either csv or stdin format.
 
-For csv mode, it is required to provide the dataset by csv format file. A path of absolute path or relative path is needed for searching the file.
+For csv mode, you need to provide a distance matrix as a csv format file that satisfies the following requirements. The absolute path or relative path is needed for searching the file. 
 
-The csv file contains n+1 lines, in which n represents the number of objects, and should follow the criterias below:
+- The csv file must have n+1 lines, where n is the number of objects (i.e. the size of the distance matrix).  
+- The first line of the csv file only states the number n of objects in the first entry. 
+- In the remainder of the csv file, each line states the corresponding row of the distance matrix.
 
-- in the first line, the number of objects n should be given, like 5.
-- in the following n lines, the distance matrix should be given, with n numbers every line.
+We now demonstrate the code using `manhattan_distances_20x20.csv`. This sample distance matrix has been created as follows: we randomly generated 20 grid points in the plane as below using `generate_random_integer_points.py` and computed their pairwise distances using L1 metric. 
+[Untitled (2)](https://github.com/keita1126/CactusAlgorithm/assets/31284538/acefae24-8ed6-47cb-b2e9-9a5dd6a1eaec)
 
-As an example, a file called 'manhattan_distances_20x20.csv' which contains L1 distance (Manhattan Distance) matrix of 20 random points in a 20*20 grid is given. By following the instruction below, a graph containing the exact description of distance matrix is shown. 
+
 ```
 csv or stdin:csv
 File Name:manhattan_distances_20x20.csv
 ```
-The graph should be like this (for the simplicity, I manually chose not to show the weights of edges, but the result should contain. Also, the picture is mirror flipped and rotated, but the structure does not change).
 
+Given the above distance matrix, the code `cactus.py` computes the adjacency matrix of an optimal realization and then draws it using the Kamada–Kawai layout. `updated_cactus_code_for_20x20_points_and_colorcircle.py`
+[IMG_6636](https://github.com/hayamizum/CactusAlgorithm/assets/3113385/bfb22f4d-e59d-4a7e-856c-8a4d0430bc27)
+
+With a slight modification, the above graph can be drawn as follows (`updated_cactus_code_for_20x20_points_and_colorcircle.py` was used):
 <img width="565" alt="Untitled (3)" src="https://github.com/keita1126/CactusAlgorithm/assets/31284538/6a0229ff-2cd6-4aeb-a2c4-7a1297d80ea5">
 
-The original distribution of points is this (you can use generate_random_integer_points.py to generate the random points yourself):
-![Untitled (2)](https://github.com/keita1126/CactusAlgorithm/assets/31284538/acefae24-8ed6-47cb-b2e9-9a5dd6a1eaec)
 
 
-
-
-
-
-For stdin mode, it is required to input the dataset manually. The first parameter is about the number of objects n. Then the input distance matrix including n×n elements is required, and the data should use white space and Enter to distinguish elements.
-
-For example:
+For stdin mode, it is required to input the distances manually. Shown below is an example using another distance matrix. The first parameter is about the number of objects n. Then the input distance matrix including n×n elements is required, and the data must use white space and Enter to distinguish elements. 
 
 ```
 Input n: 8
@@ -79,19 +76,12 @@ Input Distance Matrix:
 2 3 2 1 1 2 1 0
 ```
 
-The result should be a picture of a cube with every edge in weight 1. Also, a result about whether the generated graph is the realization of the given distance matrix is shown as True or False.
-![image](https://github.com/keita1126/CactusAlgorithm/assets/31284538/7ed85f02-f9ba-46c3-b171-0a8f417fea2a)
+Given the above distance matrix, the code `cactus.py` yields an optimal realization that is a cube graph where every edge has weight 1. The code also tells whether or not the generated graph is an exact realization of the given distance matrix (True or False).
+[image](https://github.com/keita1126/CactusAlgorithm/assets/31284538/7ed85f02-f9ba-46c3-b171-0a8f417fea2a)
 
-## Special Examples
+## Biological data
 
-### For HIV data
+### HIV sequence data
 
-The original HIV sequence fasta file has been provided as `hiv-db_gap_strip.fasta`, the `hiv_seq_hamming_distance.csv` is the hamming distances between sequences, which is calculated by `from_fasta_to_distance_matrix.py`.
-
-The `updated_cactus_code_for_hiv_data.py` has been specialized for visualization of the result, users can apply it to `hiv_seq_hamming_distance.csv`
-
-### For 20 random points and color circle data
-
-The generate method for 20 random points is shown in `generate_random_integer_points.py`, and the one of the possible results has been shown in `manhattan_distances_20x20.csv`.
-
-The `updated_cactus_code_for_20x20_points_and_colorcircle.py` has been specialized for visualization of the result, users can apply it to `manhattan_distances_20x20.csv` and `color_matrix_output.csv`
+HIV sequence data in fasta format are found in `hiv-db_gap_strip.fasta`. Using `from_fasta_to_distance_matrix.py`, you can calculate the p-distances (or Hamming distances) between the sequences, which has been saved in `hiv_seq_hamming_distance.csv`. You can visualize the result by using `updated_cactus_code_for_hiv_data.py`. 
+[image](https://github.com/hayamizum/CactusAlgorithm/assets/3113385/097dac1c-9e5f-443e-acde-4953c232f754)
