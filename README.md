@@ -9,7 +9,7 @@ This project is written in Python and can be run in a Python environment.
 First, clone this repository to your local machine and access the main directory using the command below:
 
 ```bash
-git clone https://github.com/keita1126/CactusAlgorithm.git
+git clone https://github.com/hayamizum/CactusAlgorithm.git
 cd CactusAlgorithm
 ```
 
