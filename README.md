@@ -82,3 +82,16 @@ Input Distance Matrix:
 The result should be a picture of a cube with every edge in weight 1. Also, a result about whether the generated graph is the realization of the given distance matrix is shown as True or False.
 ![image](https://github.com/keita1126/CactusAlgorithm/assets/31284538/7ed85f02-f9ba-46c3-b171-0a8f417fea2a)
 
+## Special Examples
+
+### For HIV data
+
+The original HIV sequence fasta file has been provided as `hiv-db_gap_strip.fasta`, the `hiv_seq_hamming_distance.csv` is the hamming distances between sequences, which is calculated by `from_fasta_to_distance_matrix.py`.
+
+The `updated_cactus_code_for_hiv_data.py` has been specialized for visualization of the result, users can apply it to `hiv_seq_hamming_distance.csv`
+
+### For 20 random points and color circle data
+
+The generate method for 20 random points is shown in `generate_random_integer_points.py`, and the one of the possible results has been shown in `manhattan_distances_20x20.csv`.
+
+The `updated_cactus_code_for_20x20_points_and_colorcircle.py` has been specialized for visualization of the result, users can apply it to `manhattan_distances_20x20.csv` and `color_matrix_output.csv`
