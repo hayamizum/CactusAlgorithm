@@ -93,6 +93,6 @@ The Kamada–Kawai algorithm generally works well, but as seen below, a slight m
 
 HIV sequence data in fasta format are found in `hiv-db_gap_strip.fasta`. Using `from_fasta_to_distance_matrix.py`, you can calculate the p-distances (or Hamming distances) between the sequences, which has been saved in `hiv_seq_hamming_distance.csv`. You can visualize the result by using `updated_cactus_code_for_hiv_data.py`. To make the result more friendly to beginners, the figure has been annotated manually and attached with colors.
 
-<img width=100% alt="Output graph for the Hamming distances of HIV sequences" src="https://github.com/hayamizum/CactusAlgorithm/assets/3113385/097dac1c-9e5f-443e-acde-4953c232f754">
+#### Attention: If users want to apply to other DNA data, ALL sequences in FASTA file should have the same length
 
-#### Attention: ALL sequences in FASTA file should have the same length
+<img width=100% alt="Output graph for the Hamming distances of HIV sequences" src="https://github.com/hayamizum/CactusAlgorithm/assets/3113385/097dac1c-9e5f-443e-acde-4953c232f754">
