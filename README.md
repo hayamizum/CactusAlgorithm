@@ -46,6 +46,22 @@ For csv mode, you need to input a distance matrix as a csv format file that sati
 - The first line of the csv file only states the number $n$ of objects in the first entry. 
 - In the remainder $n$ lines of the csv file, each line states the corresponding row of the distance matrix.
 
+For stdin mode, it is required to input the distances manually. Shown below is an example using another distance matrix. The first parameter is about the number of objects $n$. Then the input distance matrix including $n×n$ elements is required, and the data must use white space and Enter to distinguish elements. 
+
+```
+Input n: 5
+Input Distance Matrix: 
+0 2 1 1 1
+2 0 1 1 1
+1 1 0 2 2
+1 1 2 0 2
+1 1 2 2 0
+```
+
+Given the above distance matrix, the code `cactus.py` yields an optimal realization that is a $K_2,3$ graph where every edge has weight 1. The code also tells whether or not the generated graph is an exact realization of the given distance matrix (`True` or `False`).
+
+![image](https://github.com/hayamizum/CactusAlgorithm/assets/31284538/0fce0d84-52ac-4f34-a727-8cc3686952a8)
+
 We here demonstrate the code using a sample distance matrix. The sample distance matrix has been created as follows. First, we randomly generated 20 grid points in the plane as below using `generate_random_integer_points.py`, and the points' coordinates are all integers for the reason that the float number will cause precision loss when it comes to add `+` operations. Then, we computed their pairwise distances using L1 metric. The resulting distance matrix is found in `manhattan_distances_20x20.csv`. 
 
 <img width=40% alt="Randomly generated 20 grid points" src="https://github.com/keita1126/CactusAlgorithm/assets/31284538/acefae24-8ed6-47cb-b2e9-9a5dd6a1eaec">
@@ -62,23 +78,6 @@ File Name:manhattan_distances_20x20.csv
 The Kamada–Kawai algorithm generally works well, but as seen below, a slight modification (`updated_cactus_code_for_20x20_points_and_colorcircle.py`) yields a better drawing:
 
 <img width=50% alt="modified output graph for the L1 distance matrix of the random 20 grid points" src="https://github.com/keita1126/CactusAlgorithm/assets/31284538/6a0229ff-2cd6-4aeb-a2c4-7a1297d80ea5">
-
-
-For stdin mode, it is required to input the distances manually. Shown below is an example using another distance matrix. The first parameter is about the number of objects $n$. Then the input distance matrix including $n×n$ elements is required, and the data must use white space and Enter to distinguish elements. 
-
-```
-Input n: 5
-Input Distance Matrix: 
-0 2 1 1 1
-2 0 1 1 1
-1 1 0 2 2
-1 1 2 0 2
-1 1 2 2 0
-```
-
-Given the above distance matrix, the code `cactus.py` yields an optimal realization that is a $K_2,3$ graph where every edge has weight 1. The code also tells whether or not the generated graph is an exact realization of the given distance matrix (`True` or `False`).
-
-![image](https://github.com/hayamizum/CactusAlgorithm/assets/31284538/0fce0d84-52ac-4f34-a727-8cc3686952a8)
 
 ## Biological data
 
