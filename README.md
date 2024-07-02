@@ -64,6 +64,10 @@ Given the above distance matrix, the code `cactus.py` yields an optimal realizat
 
 ![image](https://github.com/hayamizum/CactusAlgorithm/assets/31284538/0fce0d84-52ac-4f34-a727-8cc3686952a8)
 
+```
+True
+```
+
 ### csv mode
 
 We here demonstrate the code using a sample distance matrix. The sample distance matrix has been created as follows. First, we randomly generated 20 grid points in the plane as below using `generate_random_integer_points.py`, and the points' coordinates are all integers for the reason that the float number will cause precision loss when it comes to add `+` operations. Then, we computed their pairwise distances using L1 metric. The resulting distance matrix is found in `manhattan_distances_20x20.csv`. 
