@@ -67,22 +67,18 @@ The Kamada–Kawai algorithm generally works well, but as seen below, a slight m
 For stdin mode, it is required to input the distances manually. Shown below is an example using another distance matrix. The first parameter is about the number of objects $n$. Then the input distance matrix including $n×n$ elements is required, and the data must use white space and Enter to distinguish elements. 
 
 ```
-Input n: 8
+Input n: 5
 Input Distance Matrix: 
-0 1 2 1 1 2 3 2
-1 0 1 2 2 1 2 3
-2 1 0 1 3 2 1 2
-1 2 1 0 2 3 2 1
-1 2 3 2 0 1 2 1
-2 1 2 3 1 0 1 2
-3 2 1 2 2 1 0 1
-2 3 2 1 1 2 1 0
+0 2 1 1 1
+2 0 1 1 1
+1 1 0 2 2
+1 1 2 0 2
+1 1 2 2 0
 ```
 
-Given the above distance matrix, the code `cactus.py` yields an optimal realization that is a cube graph where every edge has weight 1. The code also tells whether or not the generated graph is an exact realization of the given distance matrix (`True` or `False`).
+Given the above distance matrix, the code `cactus.py` yields an optimal realization that is a $K_2,3$ graph where every edge has weight 1. The code also tells whether or not the generated graph is an exact realization of the given distance matrix (`True` or `False`).
 
-<img width=50% alt="output graph (cube graph)" src="https://github.com/keita1126/CactusAlgorithm/assets/31284538/7ed85f02-f9ba-46c3-b171-0a8f417fea2a">
-
+![image](https://github.com/hayamizum/CactusAlgorithm/assets/31284538/0fce0d84-52ac-4f34-a727-8cc3686952a8)
 
 ## Biological data
 
