@@ -1,6 +1,6 @@
 # Project Introduction
 
-This project aims at computing a weighted graph that (exactly or approximately) realizes a given distance matrix. For a distance matrix $D$ on a set $X$ of $n$ objects, a realization of $D$ is defined to be a weighted graph $G = (V,E; w)$ such that $X$ is a subset of $V$ and for any two elements $x_i$, $x_j$ in $X$, the shortest path distance $d_G$ between $x_i$ and $x_j$ equals to the input pairwise distance $D(x_i,x_j)$. In the case when D can be realized by a cactus graph or a fully labeled graph, the code outputs a (unique) optimal realization of $D$ (i.e., an exact realization that minimizes the sum of the edge-weights).
+This project aims at computing a weighted graph that (exactly or approximately) realizes a given distance matrix. For a distance matrix $D$ on a set $X$ of $n$ objects, a realization of $D$ is defined to be a weighted graph $G = (V,E; w)$ such that $X$ is a subset of $V$ and for any two elements $x_i$, $x_j$ in $X$, the shortest path distance $d_G$ between $x_i$ and $x_j$ equals to the input pairwise distance $D(x_i,x_j)$. In the case when $D$ can be realized by a cactus graph or a fully labeled graph, the code outputs a (unique) optimal realization of $D$ (i.e., an exact realization that minimizes the sum of the edge-weights).
 
 This project is written in Python and can be run in a Python environment.
 
