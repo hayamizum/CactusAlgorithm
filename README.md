@@ -58,7 +58,7 @@ Input Distance Matrix:
 1 1 2 2 0
 ```
 
-Given the above distance matrix, the code `cactus.py` yields an optimal realization that is a $K_2,3$ graph where every edge has weight 1. The code also tells whether or not the generated graph is an exact realization of the given distance matrix (`True` or `False`).
+Given the above distance matrix, the code `cactus.py` yields an optimal realization that is a $K_{2,3}$ graph where every edge has weight 1. The code also tells whether or not the generated graph is an exact realization of the given distance matrix (`True` or `False`).
 
 ![image](https://github.com/hayamizum/CactusAlgorithm/assets/31284538/0fce0d84-52ac-4f34-a727-8cc3686952a8)
 
