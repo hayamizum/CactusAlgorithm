@@ -36,6 +36,8 @@ To run this project, you may require the following packages:
 
 ## Tutorial
 
+The code files are in `Code` directory and data mentioned are in `Data` directory.
+
 When running the code, you can provide a distance matrix in either csv or stdin format.
 
 For csv mode, you need to input a distance matrix as a csv format file that satisfies the following requirements. The absolute path or relative path is needed for searching the file. 
