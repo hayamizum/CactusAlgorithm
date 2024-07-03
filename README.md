@@ -4,7 +4,7 @@ This project aims at computing a weighted graph that (exactly or approximately) 
 
 Here is a breif example showing what this project aims to do:
 
-![image](https://github.com/hayamizum/CactusAlgorithm/assets/31284538/dda805b3-5acc-49f0-99ad-e9bba69e16d2)
+![image](https://github.com/hayamizum/CactusAlgorithm/assets/31284538/3e6c8d70-be72-4753-9fcc-e9667ef840ae)
 
 This project is written in Python and can be run in a Python environment.
 
