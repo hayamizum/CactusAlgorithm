@@ -120,10 +120,8 @@ void Compactification(int v,double cx){
 
 void Check_Compactification(){
 	int Size=Now_Graph.size();
-	cout<<"Size->"<<Size<<'\n';
 	for(int i=0;i<Size;i++){
 		int vertex_i=Now_Graph[i];
-		cout<<"vertex_i->"<<vertex_i<<'\n';
 		double CurrentCx=INT_MAX;
 		for(int j=0;j<Size;j++){
 			int vertex_j=Now_Graph[j];
@@ -139,7 +137,6 @@ void Check_Compactification(){
 				CurrentCx=min(CurrentCx,Cx);
 			}
 		}
-		cout<<"CurrentCx->"<<CurrentCx<<'\n';
 		Compactification(vertex_i,CurrentCx);
 		early_ending:
 			while(0);
@@ -150,8 +147,8 @@ void Check_Compactification(){
 int get_degree(int v){
 	int degree=0;
 	for(int i=0;i<Now_Graph.size();i++){
-		if(i==v)continue;
-		if(Weight[i][v]!=MAX_INT)degree++;
+		if(Now_Graph[i]==v)continue;
+		if(Weight[Now_Graph[i]][v]!=MAX_INT)degree++;
 	}
 	return degree;
 }
@@ -163,8 +160,6 @@ void Check_Edge(int x,int y){
 		if(DistanceMatrix[x][vertex]+DistanceMatrix[vertex][y]==Weight[x][y]){
 			if(DistanceMatrix[x][vertex]==0||DistanceMatrix[y][vertex]==0)continue;
 			Weight[x][y]=Weight[y][x]=MAX_INT;
-			puts("clear");
-			cout<<"x->"<<x<<" y->"<<y<<" z->"<<vertex<<'\n';
 		}
 	}
 }
@@ -215,7 +210,6 @@ void test_dis(){
 
 void Algorithm(){
 	Check_Compactification();
-	test_weight();
 	Clear_Graph_Edge();
 	Clear_Graph_Vertex();
 }
