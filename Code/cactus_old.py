@@ -263,7 +263,7 @@ def mkAdj(V):
                 Adj_opt[x,y] = Adj_opt[y,x] = 1
             V_del = V_del.union({x,y})
 
-        if len(connect)>2:
+        if len(connect)>2: #次数3以上の頂点をCompactificationする
             Compactification(connect)
 
 
