@@ -1,0 +1,234 @@
+// ==================================================================
+// 機能:
+//   有限距離空間 (V, D) を入力とし、それを実現するカクタスグラフ G を出力する。
+//   この疑似コードは cactus_old.py のアルゴリズムを忠実に再現し、
+//   論理的に整理したものである。
+//
+// データ構造:
+//   V: 頂点の集合 (set)。要素は文字列または整数。
+//   D: 頂点間の距離行列 (dict of dicts)。D[i][j] で d(i,j) を表す。
+//      V に含まれない頂点間の距離も保持することがある。
+//   G: 重み付きグラフ (隣接行列 or 隣接リスト)。
+// ==================================================================
+
+// ==================================================================
+// 関数: Main(V_initial, D_initial)
+// ==================================================================
+// 入力:
+//   V_initial: 初期頂点の集合
+//   D_initial: 初期頂点間の距離行列
+//
+// 出力:
+//   G: 入力空間を実現するカクタスグラフ
+//
+// ローカル変数:
+//   V_current: 現在のループで処理対象となる頂点の集合
+//   D_current: 現在の距離行列
+//
+// ------------------------------------------------------------------
+
+1.  // --- 初期化 ---
+2.  V_current = V_initial
+3.  D_current = D_initial
+
+4.  // --- メインループ ---
+5.  LOOP
+6.      V_previous = V_current
+
+7.      // --- フェーズ1: Full Compactification & 頂点同一視 ---
+8.      (V_compacted, D_compacted) = Full_Compactification(V_current, D_current)
+
+9.      // --- フェーズ2: Topological Pruning ---
+10.     V_current = Topological_Pruning(V_compacted, D_compacted)
+
+11.     // --- 終了条件 ---
+12.     IF V_current == V_previous THEN
+13.         BREAK LOOP
+14.     END IF
+15. END LOOP
+
+16. // --- 仕上げ: 最終的なグラフの構築 ---
+17. G = Build_Final_Graph(V_current, D_current)
+
+18. RETURN G
+
+
+// ==================================================================
+// 関数: Full_Compactification(V_in, D_in)
+// ==================================================================
+// 目的:
+//   V_in の各頂点に対して compactification を行い、compactification index (α) が
+//   正となる頂点に対して補助点を追加し、頂点を同一視する。
+//
+// 入力:
+//   V_in: 処理対象の頂点集合
+//   D_in: 現在の距離行列
+//
+// 出力:
+//   V_out: 補助点追加と同一視が完了した頂点集合
+//   D_out: 補助点追加と同一視を反映した距離行列
+//
+// ------------------------------------------------------------------
+
+1.  // --- 初期化 ---
+2.  V_out = V_in
+3.  D_out = D_in
+
+4.  // --- ループ: V_in の各頂点に対して compactification を試みる ---
+5.  // このループは V_in の全頂点に対して1回ずつ実行される。
+6.  // ループ中に V_out が変化しても、ループの対象は元の V_in のみ。
+7.  FOR each v in V_in
+8.      // --- compactification index α(v) の計算 ---
+9.      // α(v) = min_{u, w in V_out} (d(v,u) + d(v,w) - d(u,w)) / 2
+10.     alpha_v = infinity
+11.     compactification_pair = null
+
+12.     // v を除く全ての頂点のペア (u,w) を探す
+13.     // V_out はループ中に変化する可能性があるため、その時点での V_out を使う
+14.     other_vertices = V_out - {v}
+15.     IF size(other_vertices) < 2 THEN
+16.         CONTINUE FOR // ペアが作れない場合はスキップ
+17.     END IF
+
+18.     FOR each pair (u, w) in combinations(other_vertices, 2)
+19.         // D[u,v] は d(u,v) を表す
+20.         val = (D_out[v][u] + D_out[v][w] - D_out[u][w]) / 2
+21.         IF val < alpha_v THEN
+22.             alpha_v = val
+23.             compactification_pair = (u, w)
+24.         END IF
+25.     END FOR
+
+26.     // --- 補助点の追加 ---
+27.     // compactification index α(v) が正の場合、新しい補助点を追加する
+28.     IF alpha_v > 0 THEN
+29.         (u, w) = compactification_pair
+30.         z = new_vertex() // 新しい頂点zを生成
+
+31.         // D_out と V_out を拡張
+32.         V_out.add(z)
+33.         // d(x,z) = (d(x,u) + d(x,w) - d(u,w)) / 2
+34.         FOR each x in V_out (z自身も含む)
+35.             dist_xz = (D_out[x][u] + D_out[x][w] - D_out[u][w]) / 2
+36.             D_out[x][z] = dist_xz
+37.             D_out[z][x] = dist_xz
+38.         END FOR
+39.         D_out[z][z] = 0
+
+40.         // --- 頂点同一視 ---
+41.         // D_out に距離が0のペアがなくなるまで、繰り返し同一視を行う
+42.         LOOP
+43.             found_zero_pair = false
+44.             pair_to_merge = null
+45.             FOR each pair (i, j) in V_out where i != j
+46.                 IF D_out[i][j] == 0 THEN
+47.                     pair_to_merge = (i, j)
+48.                     found_zero_pair = true
+49.                     BREAK
+50.                 END IF
+51.             END FOR
+
+52.             IF found_zero_pair THEN
+53.                 (i, j) = pair_to_merge
+54.                 // j を i に統合する (j を削除)
+55.                 V_out.remove(j)
+56.                 // D_out から j の行と列を削除
+57.                 D_out.remove_row_col(j)
+58.             ELSE
+59.                 BREAK LOOP // 同一視するペアがなくなったら終了
+60.             END IF
+61.         END LOOP
+62.     END IF
+63. END FOR
+
+64. RETURN (V_out, D_out)
+
+
+// ==================================================================
+// 関数: Topological_Pruning(V_in, D_in)
+// ==================================================================
+// 目的:
+//   現在の距離行列 D_in の下で冗長でない辺集合を一時的に計算し、
+//   そのグラフ上で次数が3以上の頂点のみを残す。
+//   この関数は D_in を変更しない。
+//
+// 入力:
+//   V_in: 処理対象の頂点集合
+//   D_in: 現在の距離行列
+//
+// 出力:
+//   V_out: 次数が3以上の頂点のみからなる新しい頂点集合
+//
+// ------------------------------------------------------------------
+
+1.  // --- 冗長でない辺集合 E_non_redundant の構築 ---
+2.  E_non_redundant = empty_set()
+3.  FOR each pair (i, j) in V_in
+4.      is_redundant = false
+5.      // 辺(i,j)が他の頂点kを経由して冗長かどうかを判定
+6.      FOR each k in V_in where k != i and k != j
+7.          // ユーザーの指摘に基づき、判定式を <= に修正
+8.          IF D_in[i][k] + D_in[k][j] <= D_in[i][j] THEN
+9.              is_redundant = true
+10.             BREAK
+11.         END IF
+12.     END FOR
+13.     IF not is_redundant THEN
+14.         E_non_redundant.add(edge(i, j))
+15.     END IF
+16. END FOR
+
+17. // --- 次数が3以上の頂点を抽出 ---
+18. V_out = empty_set()
+19. FOR each v in V_in
+20.     degree = 0
+21.     FOR each edge in E_non_redundant
+22.         IF edge.contains(v) THEN
+23.             degree = degree + 1
+24.         END IF
+25.     END FOR
+26.     IF degree >= 3 THEN
+27.         V_out.add(v)
+28.     END IF
+29. END FOR
+
+30. RETURN V_out
+
+
+// ==================================================================
+// 関数: Build_Final_Graph(V_final, D_final)
+// ==================================================================
+// 目的:
+//   最終的な頂点集合 V_final と距離行列 D_final を元に、
+//   完全グラフから冗長な辺を削除して最終的なグラフ G を構築する。
+//
+// 入力:
+//   V_final: 最終的な頂点集合
+//   D_final: 最終的な距離行列
+//
+// 出力:
+//   G: 重み付きグラフ (隣接行列形式)
+//
+// ------------------------------------------------------------------
+
+1.  // G は V_final を頂点集合とする重み付き隣接行列として初期化
+2.  G = initialize_adj_matrix(V_final)
+
+3.  FOR each pair (i, j) in V_final
+4.      is_redundant = false
+5.      FOR each k in V_final where k != i and k != j
+6.          // ユーザーの指摘に基づき、判定式を <= に修正
+7.          IF D_final[i][k] + D_final[k][j] <= D_final[i][j] THEN
+8.              is_redundant = true
+9.              BREAK
+10.         END IF
+11.     END FOR
+12.     IF not is_redundant THEN
+13.         // 辺(i,j)は冗長でないので、グラフに追加
+14.         // 重みは D_final[i][j] とする
+15.         G[i][j] = D_final[i][j]
+16.         G[j][i] = D_final[i][j]
+17.     END IF
+18. END FOR
+
+19. RETURN G 

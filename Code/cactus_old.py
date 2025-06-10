@@ -12,6 +12,7 @@ import itertools
 import copy
 import csv
 import pandas as pd
+import os
 
 #関数 readcsv
 def readcsv(filename):
@@ -26,6 +27,31 @@ def readcsv(filename):
             # 2行目以降のデータを数値としてリストに追加します
             distance_matrix.append([float(value) for value in row])
     return n, np.array(distance_matrix)
+
+def save_graph_to_file(graph, input_filename):
+    """
+    グラフをソート済みの辺リストとしてファイルに保存する。
+    出力ファイル名は input_filename に基づいて生成される。
+    """
+    # 出力ファイル名を生成 (e.g., "my_data.csv" -> "my_data_output_old.txt")
+    base_name = os.path.splitext(input_filename)[0]
+    output_filename = f"{base_name}_output_old.txt"
+
+    edges = []
+    for u, v, data in graph.edges(data=True):
+        weight = data.get('weight', 1.0)
+        # 頂点 u, v を常に u < v となるようにソートして格納
+        edges.append(tuple(sorted((u, v))) + (weight,))
+
+    # 辺リストを u, v の順でソート
+    edges.sort()
+
+    with open(output_filename, 'w') as f:
+        f.write("# u, v, weight\n")
+        for u, v, weight in edges:
+            f.write(f"{u}, {v}, {weight}\n")
+    
+    print(f"Graph saved to {output_filename}")
 
 #関数 add_csv .csvを付ける
 def add_csv(filename):
@@ -332,6 +358,7 @@ elif mode == "stdin" or mode == "s":#標準入力
     print("Input Distance Matrix: ")
     D_list = [list(map(float, input().split())) for i in range(n)] #2行目以降標準入力
     D = np.array(D_list)
+    filename = "stdin_input" # stdinモード用のデフォルトファイル名
 else:
     print("erorr")
     sys.exit()
@@ -368,6 +395,8 @@ for x,y in itertools.permutations(AllVertices,2):
         G[x][y]['weight'] = round(D[x,y],5)
 
 edge_labels = nx.get_edge_attributes(G, 'weight')
+
+save_graph_to_file(G, filename)
 
 
 #元データとあっているか
