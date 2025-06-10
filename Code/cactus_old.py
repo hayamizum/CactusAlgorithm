@@ -129,7 +129,7 @@ def Compactification(V):
         return
 
     for x in V:
-        index, (y, z) = comp(V,x)
+        index, (y, z) = comp(V,x) #indexはxのcompactification index，(y,z)はxのcompactification indexを与える頂点の組
         if index == 0:
             continue
         else:
@@ -425,6 +425,7 @@ for x,y in itertools.permutations(AllVertices,2):
         G[x][y]['weight'] = 1
 pos = nx.kamada_kawai_layout(G)
 node_color = ['black' if x < n else 'white' for x in AllVertices]
-nx.draw_networkx(G, pos=pos, with_labels=False, node_color=node_color, edgecolors='black' , node_size=20)
+nx.draw_networkx(G, pos=pos, with_labels=True, node_color=node_color, edgecolors='black', node_size=300, font_size=10, font_color='red')
 nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edge_labels, font_size=8)
+plt.title("Original Algorithm (cactus_old.py) - Final Graph with Vertex Labels\n(Black: Original vertices, White: Auxiliary vertices)")
 plt.show()

@@ -1,51 +1,291 @@
 # u, v, weight
+0, 3, 7.0
 0, 7, 6.0
 0, 9, 8.0
 0, 13, 3.0
 0, 15, 11.0
-0, 22, 6.0
 1, 6, 4.0
 1, 14, 15.0
-1, 21, 7.0
+1, 20, 7.0
 2, 5, 8.0
 2, 6, 3.0
 2, 8, 16.0
 2, 9, 11.0
 2, 15, 10.0
 2, 19, 4.0
-2, 21, 8.0
+2, 20, 8.0
+3, 7, 7.0
+3, 10, 1.0
+3, 14, 10.0
+3, 15, 8.0
+3, 16, 10.0
 4, 8, 2.0
 4, 12, 2.0
-4, 21, 12.0
+4, 20, 12.0
 5, 7, 3.0
 5, 9, 11.0
 5, 15, 8.0
 5, 19, 8.0
-5, 21, 10.0
+5, 20, 10.0
 6, 8, 17.0
 6, 19, 3.0
-6, 21, 9.0
+6, 20, 9.0
 7, 9, 12.0
 7, 15, 7.0
 7, 17, 12.0
-7, 21, 11.0
-7, 22, 6.0
+7, 20, 11.0
 8, 9, 7.0
 8, 12, 2.0
 8, 13, 12.0
-8, 21, 12.0
+8, 20, 12.0
 9, 13, 9.0
 9, 17, 12.0
 9, 19, 13.0
-9, 21, 11.0
+9, 20, 11.0
 11, 13, 5.0
 11, 15, 17.0
+11, 16, 3.0
 11, 17, 2.0
-11, 22, 12.0
 12, 17, 9.0
 13, 17, 5.0
 14, 15, 4.0
 14, 19, 10.0
-14, 22, 9.0
 15, 19, 10.0
-15, 22, 7.0
+18, 20, 3.0
+
+# COMPUTATION PROCESS LOG
+# ================================================
+# ==================================================
+# ITERATION 0
+# ==================================================
+# === Full Compactification ===
+# Input vertices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+# SLACK VERTEX FOUND: v=10, alpha_v=1.000000, pair=(0,3)
+#   Adding auxiliary vertex z=20
+#   D_out[0][20] = 7.000000
+#   D_out[3][20] = 0.000000
+#   D_out[1][20] = 25.000000
+#   D_out[2][20] = 18.000000
+#   D_out[4][20] = 24.000000
+#   D_out[5][20] = 10.000000
+#   D_out[6][20] = 21.000000
+#   D_out[7][20] = 7.000000
+#   D_out[8][20] = 22.000000
+#   D_out[9][20] = 15.000000
+#   D_out[11][20] = 13.000000
+#   D_out[12][20] = 24.000000
+#   D_out[13][20] = 10.000000
+#   D_out[14][20] = 10.000000
+#   D_out[15][20] = 8.000000
+#   D_out[16][20] = 10.000000
+#   D_out[17][20] = 15.000000
+#   D_out[18][20] = 21.000000
+#   D_out[19][20] = 18.000000
+#   MERGING: auxiliary vertex 20 into 3 (distance = 0.000000)
+# SLACK VERTEX FOUND: v=18, alpha_v=3.000000, pair=(0,1)
+#   Adding auxiliary vertex z=20
+#   D_out[0][20] = 17.000000
+#   D_out[1][20] = 7.000000
+#   D_out[2][20] = 8.000000
+#   D_out[3][20] = 18.000000
+#   D_out[4][20] = 12.000000
+#   D_out[5][20] = 10.000000
+#   D_out[6][20] = 9.000000
+#   D_out[7][20] = 11.000000
+#   D_out[8][20] = 12.000000
+#   D_out[9][20] = 11.000000
+#   D_out[10][20] = 19.000000
+#   D_out[11][20] = 25.000000
+#   D_out[12][20] = 14.000000
+#   D_out[13][20] = 20.000000
+#   D_out[14][20] = 22.000000
+#   D_out[15][20] = 18.000000
+#   D_out[16][20] = 28.000000
+#   D_out[17][20] = 23.000000
+#   D_out[19][20] = 12.000000
+#   Auxiliary vertex 20 preserved in V_out
+# Output vertices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+# Updated final graph data: 21 vertices
+# === Topological Pruning ===
+# Input vertices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+# Non-redundant edges: 53
+# Vertex degrees:
+#   vertex 0: degree 5
+#   vertex 1: degree 3
+#   vertex 2: degree 7
+#   vertex 3: degree 6
+#   vertex 4: degree 3
+#   vertex 5: degree 6
+#   vertex 6: degree 5
+#   vertex 7: degree 7
+#   vertex 8: degree 7
+#   vertex 9: degree 9
+#   vertex 10: degree 1
+#   vertex 11: degree 4
+#   vertex 12: degree 3
+#   vertex 13: degree 5
+#   vertex 14: degree 4
+#   vertex 15: degree 8
+#   vertex 16: degree 2
+#   vertex 17: degree 5
+#   vertex 18: degree 1
+#   vertex 19: degree 6
+#   vertex 20: degree 9
+# Kept vertices (degree >= 3): [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20]
+# Removed vertices (degree < 3): [10, 16, 18]
+# Iteration 0 summary:
+#   V_previous: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+#   V_compacted: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+#   V_current: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20]
+# ==================================================
+# ITERATION 1
+# ==================================================
+# === Full Compactification ===
+# Input vertices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20]
+# SLACK VERTEX FOUND: v=3, alpha_v=1.000000, pair=(0,14)
+#   Adding auxiliary vertex z=21
+#   D_out[0][21] = 6.000000
+#   D_out[14][21] = 9.000000
+#   D_out[1][21] = 24.000000
+#   D_out[2][21] = 17.000000
+#   D_out[4][21] = 23.000000
+#   D_out[5][21] = 9.000000
+#   D_out[6][21] = 20.000000
+#   D_out[7][21] = 6.000000
+#   D_out[8][21] = 21.000000
+#   D_out[9][21] = 14.000000
+#   D_out[11][21] = 12.000000
+#   D_out[12][21] = 23.000000
+#   D_out[13][21] = 9.000000
+#   D_out[15][21] = 7.000000
+#   D_out[17][21] = 14.000000
+#   D_out[19][21] = 17.000000
+#   D_out[20][21] = 17.000000
+#   Auxiliary vertex 21 preserved in V_out
+# Output vertices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+# === Topological Pruning ===
+# Input vertices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+# Non-redundant edges: 51
+# Vertex degrees:
+#   vertex 0: degree 5
+#   vertex 1: degree 3
+#   vertex 2: degree 7
+#   vertex 3: degree 1
+#   vertex 4: degree 3
+#   vertex 5: degree 6
+#   vertex 6: degree 5
+#   vertex 7: degree 7
+#   vertex 8: degree 7
+#   vertex 9: degree 9
+#   vertex 11: degree 4
+#   vertex 12: degree 3
+#   vertex 13: degree 5
+#   vertex 14: degree 4
+#   vertex 15: degree 8
+#   vertex 17: degree 5
+#   vertex 19: degree 6
+#   vertex 20: degree 8
+#   vertex 21: degree 6
+# Kept vertices (degree >= 3): [0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+# Removed vertices (degree < 3): [3]
+# Iteration 1 summary:
+#   V_previous: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20]
+#   V_compacted: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+#   V_current: [0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+# ==================================================
+# ITERATION 2
+# ==================================================
+# === Full Compactification ===
+# Input vertices: [0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+# Output vertices: [0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+# === Topological Pruning ===
+# Input vertices: [0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+# Non-redundant edges: 50
+# Vertex degrees:
+#   vertex 0: degree 5
+#   vertex 1: degree 3
+#   vertex 2: degree 7
+#   vertex 4: degree 3
+#   vertex 5: degree 6
+#   vertex 6: degree 5
+#   vertex 7: degree 7
+#   vertex 8: degree 7
+#   vertex 9: degree 9
+#   vertex 11: degree 4
+#   vertex 12: degree 3
+#   vertex 13: degree 5
+#   vertex 14: degree 4
+#   vertex 15: degree 8
+#   vertex 17: degree 5
+#   vertex 19: degree 6
+#   vertex 20: degree 8
+#   vertex 21: degree 5
+# Kept vertices (degree >= 3): [0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+# Removed vertices (degree < 3): []
+# Iteration 2 summary:
+#   V_previous: [0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+#   V_compacted: [0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+#   V_current: [0, 1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 17, 19, 20, 21]
+# Terminating: V_current == V_previous
+# === Building Final Graph ===
+# Final vertices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+# Final edges: 53
+#   (7,17) weight=12.000000
+#   (7,20) weight=11.000000
+#   (18,20) weight=3.000000
+#   (3,7) weight=7.000000
+#   (4,12) weight=2.000000
+#   (3,10) weight=1.000000
+#   (3,16) weight=10.000000
+#   (5,7) weight=3.000000
+#   (14,19) weight=10.000000
+#   (8,9) weight=7.000000
+#   (5,19) weight=8.000000
+#   (8,12) weight=2.000000
+#   (1,6) weight=4.000000
+#   (9,17) weight=12.000000
+#   (2,5) weight=8.000000
+#   (9,20) weight=11.000000
+#   (2,8) weight=16.000000
+#   (11,17) weight=2.000000
+#   (13,17) weight=5.000000
+#   (2,20) weight=8.000000
+#   (6,8) weight=17.000000
+#   (6,20) weight=9.000000
+#   (4,8) weight=2.000000
+#   (5,9) weight=11.000000
+#   (3,15) weight=8.000000
+#   (14,15) weight=4.000000
+#   (4,20) weight=12.000000
+#   (0,7) weight=6.000000
+#   (5,15) weight=8.000000
+#   (9,13) weight=9.000000
+#   (9,19) weight=13.000000
+#   (11,16) weight=3.000000
+#   (0,13) weight=3.000000
+#   (8,20) weight=12.000000
+#   (11,13) weight=5.000000
+#   (1,14) weight=15.000000
+#   (1,20) weight=7.000000
+#   (2,19) weight=4.000000
+#   (7,9) weight=12.000000
+#   (15,19) weight=10.000000
+#   (7,15) weight=7.000000
+#   (6,19) weight=3.000000
+#   (12,17) weight=9.000000
+#   (3,14) weight=10.000000
+#   (0,3) weight=7.000000
+#   (0,9) weight=8.000000
+#   (5,20) weight=10.000000
+#   (2,9) weight=11.000000
+#   (8,13) weight=12.000000
+#   (0,15) weight=11.000000
+#   (2,6) weight=3.000000
+#   (11,15) weight=17.000000
+#   (2,15) weight=10.000000
+# === FINAL RESULT ===
+# Total vertices: 21
+# Total edges: 53
+# Initial vertices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+# Final vertices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+# Auxiliary vertices: [20]

@@ -1,0 +1,61 @@
+# u, v, weight
+0, 1, 1.0
+1, 2, 2.0
+
+# COMPUTATION PROCESS LOG
+# ================================================
+# ==================================================
+# ITERATION 0
+# ==================================================
+# === Full Compactification ===
+# Input vertices: [0, 1, 2]
+# SLACK VERTEX FOUND: v=0, alpha_v=1.000000, pair=(1,2)
+#   Adding auxiliary vertex z=3
+#   D_out[1][3] = 0.000000
+#   D_out[2][3] = 2.000000
+#   MERGING: auxiliary vertex 3 into 1 (distance = 0.000000)
+# SLACK VERTEX FOUND: v=2, alpha_v=2.000000, pair=(0,1)
+#   Adding auxiliary vertex z=3
+#   D_out[0][3] = 1.000000
+#   D_out[1][3] = 0.000000
+#   MERGING: auxiliary vertex 3 into 1 (distance = 0.000000)
+# Output vertices: [0, 1, 2]
+# === Topological Pruning ===
+# Input vertices: [0, 1, 2]
+# Non-redundant edges: 2
+# Vertex degrees:
+#   vertex 0: degree 1
+#   vertex 1: degree 2
+#   vertex 2: degree 1
+# Kept vertices (degree >= 3): []
+# Removed vertices (degree < 3): [0, 1, 2]
+# Iteration 0 summary:
+#   V_previous: [0, 1, 2]
+#   V_compacted: [0, 1, 2]
+#   V_current: []
+# ==================================================
+# ITERATION 1
+# ==================================================
+# === Full Compactification ===
+# Input vertices: []
+# Output vertices: []
+# === Topological Pruning ===
+# Input vertices: []
+# No non-redundant edges found
+# Iteration 1 summary:
+#   V_previous: []
+#   V_compacted: []
+#   V_current: []
+# Terminating: V_current == V_previous
+# === Building Final Graph ===
+# Final vertices: [0, 1, 2]
+# Final edges: 2
+#   (0,1) weight=1.000000
+#   (1,2) weight=2.000000
+# === FINAL RESULT ===
+# Total vertices: 3
+# Total edges: 2
+# Initial vertices: [0, 1, 2]
+# Final vertices: [0, 1, 2]
+# Auxiliary vertices: []
+# === VERIFICATION: True ===

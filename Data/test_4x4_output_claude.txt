@@ -1,9 +1,9 @@
 # u, v, weight
 0, 4, 1.0
 1, 4, 1.0
-2, 6, 1.0
-3, 6, 1.0
-4, 6, 1.0
+2, 5, 1.0
+3, 5, 1.0
+4, 5, 1.0
 
 # COMPUTATION PROCESS LOG
 # ================================================
@@ -26,24 +26,24 @@
 #   D_out[4][5] = 0.000000
 #   MERGING: auxiliary vertex 5 into 4 (distance = 0.000000)
 # SLACK VERTEX FOUND: v=2, alpha_v=1.000000, pair=(0,3)
+#   Adding auxiliary vertex z=5
+#   D_out[0][5] = 2.000000
+#   D_out[3][5] = 1.000000
+#   D_out[1][5] = 2.000000
+#   D_out[4][5] = 1.000000
+#   Auxiliary vertex 5 preserved in V_out
+# SLACK VERTEX FOUND: v=3, alpha_v=1.000000, pair=(0,2)
 #   Adding auxiliary vertex z=6
 #   D_out[0][6] = 2.000000
-#   D_out[3][6] = 1.000000
+#   D_out[2][6] = 1.000000
 #   D_out[1][6] = 2.000000
 #   D_out[4][6] = 1.000000
-#   Auxiliary vertex 6 preserved in V_out
-# SLACK VERTEX FOUND: v=3, alpha_v=1.000000, pair=(0,2)
-#   Adding auxiliary vertex z=7
-#   D_out[0][7] = 2.000000
-#   D_out[2][7] = 1.000000
-#   D_out[1][7] = 2.000000
-#   D_out[4][7] = 1.000000
-#   D_out[6][7] = 0.000000
-#   MERGING: auxiliary vertex 7 into 6 (distance = 0.000000)
-# Output vertices: [0, 1, 2, 3, 4, 6]
+#   D_out[5][6] = 0.000000
+#   MERGING: auxiliary vertex 6 into 5 (distance = 0.000000)
+# Output vertices: [0, 1, 2, 3, 4, 5]
 # Updated final graph data: 6 vertices
 # === Topological Pruning ===
-# Input vertices: [0, 1, 2, 3, 4, 6]
+# Input vertices: [0, 1, 2, 3, 4, 5]
 # Non-redundant edges: 5
 # Vertex degrees:
 #   vertex 0: degree 1
@@ -51,30 +51,30 @@
 #   vertex 2: degree 1
 #   vertex 3: degree 1
 #   vertex 4: degree 3
-#   vertex 6: degree 3
-# Kept vertices (degree >= 3): [4, 6]
+#   vertex 5: degree 3
+# Kept vertices (degree >= 3): [4, 5]
 # Removed vertices (degree < 3): [0, 1, 2, 3]
 # Iteration 0 summary:
 #   V_previous: [0, 1, 2, 3]
-#   V_compacted: [0, 1, 2, 3, 4, 6]
-#   V_current: [4, 6]
+#   V_compacted: [0, 1, 2, 3, 4, 5]
+#   V_current: [4, 5]
 # ==================================================
 # ITERATION 1
 # ==================================================
 # === Full Compactification ===
-# Input vertices: [4, 6]
-# Output vertices: [4, 6]
+# Input vertices: [4, 5]
+# Output vertices: [4, 5]
 # === Topological Pruning ===
-# Input vertices: [4, 6]
+# Input vertices: [4, 5]
 # Non-redundant edges: 1
 # Vertex degrees:
 #   vertex 4: degree 1
-#   vertex 6: degree 1
+#   vertex 5: degree 1
 # Kept vertices (degree >= 3): []
-# Removed vertices (degree < 3): [4, 6]
+# Removed vertices (degree < 3): [4, 5]
 # Iteration 1 summary:
-#   V_previous: [4, 6]
-#   V_compacted: [4, 6]
+#   V_previous: [4, 5]
+#   V_compacted: [4, 5]
 #   V_current: []
 # ==================================================
 # ITERATION 2
@@ -91,16 +91,17 @@
 #   V_current: []
 # Terminating: V_current == V_previous
 # === Building Final Graph ===
-# Final vertices: [0, 1, 2, 3, 4, 6]
+# Final vertices: [0, 1, 2, 3, 4, 5]
 # Final edges: 5
 #   (0,4) weight=1.000000
-#   (4,6) weight=1.000000
 #   (1,4) weight=1.000000
-#   (2,6) weight=1.000000
-#   (3,6) weight=1.000000
+#   (4,5) weight=1.000000
+#   (2,5) weight=1.000000
+#   (3,5) weight=1.000000
 # === FINAL RESULT ===
 # Total vertices: 6
 # Total edges: 5
 # Initial vertices: [0, 1, 2, 3]
-# Final vertices: [0, 1, 2, 3, 4, 6]
-# Auxiliary vertices: [4, 6]
+# Final vertices: [0, 1, 2, 3, 4, 5]
+# Auxiliary vertices: [4, 5]
+# === VERIFICATION: True ===

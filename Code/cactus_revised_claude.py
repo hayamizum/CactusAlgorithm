@@ -4,6 +4,7 @@ import os
 import csv
 import networkx as nx
 import matplotlib.pyplot as plt
+import pandas as pd
 from typing import Set, Tuple, List, Dict, Optional
 
 class CactusGraphClaude:
@@ -25,7 +26,13 @@ class CactusGraphClaude:
         self.initial_matrix = distance_matrix.copy()
         self.n = len(distance_matrix)
         self.initial_vertices = set(range(self.n))
-        self.max_vertex_id = self.n - 1  # Track maximum vertex ID ever seen
+        self.vertex_num = self.n - 1  # Track current vertex number (like VertexNum in cactus_old.py)
+        self.computation_log = []  # Store computation process log
+    
+    def _log(self, message: str):
+        """Print message and store in log"""
+        print(message)
+        self.computation_log.append(message)
     
     def _matrix_to_dict(self, V: Set[int], matrix: np.ndarray, vertex_to_index: Dict[int, int]) -> Dict[int, Dict[int, float]]:
         """Convert matrix to dict of dicts format"""
@@ -76,19 +83,22 @@ class CactusGraphClaude:
         """
         Full Compactification: Process each vertex in V_in exactly once
         """
-        print(f"\n=== Full Compactification ===")
-        print(f"Input vertices: {sorted(V_in)}")
+        self._log(f"\n=== Full Compactification ===")
+        self._log(f"Input vertices: {sorted(V_in)}")
         
         V_out = V_in.copy()
         D_out = {}
         for v in V_out:
             D_out[v] = D_in[v].copy()
         
+        # Track auxiliary vertices added in this iteration
+        V_aux = set()
+        
         # Process each vertex in V_in exactly once
         for v in V_in:
             # Skip if vertex was merged away
             if v not in V_out:
-                print(f"  Vertex {v} was merged away, skipping")
+                self._log(f"  Vertex {v} was merged away, skipping")
                 continue
             
             # Compute compactification index
@@ -98,11 +108,11 @@ class CactusGraphClaude:
                 continue
             
             u, w = pair
-            self.max_vertex_id += 1
-            z = self.max_vertex_id
+            self.vertex_num += 1
+            z = self.vertex_num
             
-            print(f"SLACK VERTEX FOUND: v={v}, alpha_v={alpha_v:.6f}, pair=({u},{w})")
-            print(f"  Adding auxiliary vertex z={z}")
+            self._log(f"SLACK VERTEX FOUND: v={v}, alpha_v={alpha_v:.6f}, pair=({u},{w})")
+            self._log(f"  Adding auxiliary vertex z={z}")
             
             # Add new vertex z to V_out and D_out
             V_out.add(z)
@@ -110,24 +120,33 @@ class CactusGraphClaude:
             
             # Compute distances following cactus_old.py logic
             # Distance from original vertex v to auxiliary vertex z is alpha_v
-            D_out[v][z] = D_out[z][v] = alpha_v
+            D_out[v][z] = D_out[z][v] = round(alpha_v, 5)
             
             # Distances from u and w to z
-            D_out[u][z] = D_out[z][u] = max(0, D_out[u][v] - alpha_v)
-            D_out[w][z] = D_out[z][w] = max(0, D_out[w][v] - alpha_v)
+            D_out[u][z] = D_out[z][u] = max(0, round(D_out[u][v] - alpha_v, 5))
+            D_out[w][z] = D_out[z][w] = max(0, round(D_out[w][v] - alpha_v, 5))
             
-            print(f"  D_out[{u}][{z}] = {D_out[u][z]:.6f}")
-            print(f"  D_out[{w}][{z}] = {D_out[w][z]:.6f}")
+            self._log(f"  D_out[{u}][{z}] = {D_out[u][z]:.6f}")
+            self._log(f"  D_out[{w}][{z}] = {D_out[w][z]:.6f}")
             
             # Distance from z to itself
             D_out[z][z] = 0.0
             
-            # For other vertices x, use max formula from cactus_old.py
-            for x in V_out - {v, u, w, z}:
-                dist_xz = max(D_out[x][t] - D_out[t][z] for t in {v, u, w})
-                dist_xz = max(0, dist_xz)  # Ensure non-negative
-                D_out[x][z] = D_out[z][x] = dist_xz
-                print(f"  D_out[{x}][{z}] = {dist_xz:.6f}")
+            # For other vertices a, use max formula from cactus_old.py
+            # D[a,aux] = max(D[a,t] - D[t,aux] for t in {x,y,z})
+            # where D[t,aux] has already been computed above
+            for a in V_out - {v, u, w, z}:
+                candidates = []
+                # t = v (x in cactus_old.py): D[a,v] - D[v,z] = D[a,v] - alpha_v
+                candidates.append(D_out[a][v] - D_out[v][z])
+                # t = u (y in cactus_old.py): D[a,u] - D[u,z]
+                candidates.append(D_out[a][u] - D_out[u][z])
+                # t = w (z in cactus_old.py): D[a,w] - D[w,z]
+                candidates.append(D_out[a][w] - D_out[w][z])
+                
+                dist_az = max(0, max(candidates))
+                D_out[a][z] = D_out[z][a] = dist_az
+                self._log(f"  D_out[{a}][{z}] = {dist_az:.6f}")
             
             # Vertex identification: only check vertices involved in compactification
             # Following cactus_old.py logic - check {v, u, w} for distance 0 to z
@@ -136,7 +155,7 @@ class CactusGraphClaude:
             
             for a in vertices_to_check:
                 if abs(D_out[a][z]) < 1e-9:
-                    print(f"  MERGING: auxiliary vertex {z} into {a} (distance = {D_out[a][z]:.6f})")
+                    self._log(f"  MERGING: auxiliary vertex {z} into {a} (distance = {D_out[a][z]:.6f})")
                     
                     # Remove z from V_out and D_out
                     V_out.remove(z)
@@ -144,14 +163,17 @@ class CactusGraphClaude:
                     for x in V_out:
                         if z in D_out[x]:
                             del D_out[x][z]
+                    self.vertex_num -= 1  # Decrement vertex counter like cactus_old.py
                     merged = True
                     break
             
             # If z wasn't merged, check other vertices for distance 0 to z
+            # Following cactus_old.py: only check vertices in V_in.union(V_aux)
             if not merged:
-                for a in V_out - vertices_to_check - {z}:
+                check_vertices = (V_in.union(V_aux)) & V_out - vertices_to_check - {z}
+                for a in check_vertices:
                     if abs(D_out[a][z]) < 1e-9:
-                        print(f"  MERGING: auxiliary vertex {z} into {a} (distance = {D_out[a][z]:.6f})")
+                        self._log(f"  MERGING: auxiliary vertex {z} into {a} (distance = {D_out[a][z]:.6f})")
                         
                         # Remove z from V_out and D_out
                         V_out.remove(z)
@@ -159,12 +181,15 @@ class CactusGraphClaude:
                         for x in V_out:
                             if z in D_out[x]:
                                 del D_out[x][z]
+                        self.vertex_num -= 1  # Decrement vertex counter like cactus_old.py
+                        merged = True
                         break
             
             if z in V_out:
-                print(f"  Auxiliary vertex {z} preserved in V_out")
+                self._log(f"  Auxiliary vertex {z} preserved in V_out")
+                V_aux.add(z)  # Track this auxiliary vertex
         
-        print(f"Output vertices: {sorted(V_out)}")
+        self._log(f"Output vertices: {sorted(V_out)}")
         return V_out, D_out
     
     def _compute_non_redundant_edges(self, V: Set[int], D: Dict[int, Dict[int, float]]) -> Set[Tuple[int, int]]:
@@ -188,17 +213,17 @@ class CactusGraphClaude:
         Topological Pruning: Return vertices with degree >= 3 in non-redundant edge graph
         This determines which vertices participate in the next iteration
         """
-        print(f"\n=== Topological Pruning ===")
-        print(f"Input vertices: {sorted(V_in)}")
+        self._log(f"\n=== Topological Pruning ===")
+        self._log(f"Input vertices: {sorted(V_in)}")
         
         # Compute non-redundant edges
         edges = self._compute_non_redundant_edges(V_in, D_in)
         
         if not edges:
-            print("No non-redundant edges found")
+            self._log("No non-redundant edges found")
             return set()
         
-        print(f"Non-redundant edges: {len(edges)}")
+        self._log(f"Non-redundant edges: {len(edges)}")
         
         # Compute vertex degrees
         degrees = {v: 0 for v in V_in}
@@ -206,15 +231,15 @@ class CactusGraphClaude:
             degrees[u] += 1
             degrees[v] += 1
         
-        print("Vertex degrees:")
+        self._log("Vertex degrees:")
         for v in sorted(V_in):
-            print(f"  vertex {v}: degree {degrees[v]}")
+            self._log(f"  vertex {v}: degree {degrees[v]}")
         
         # Keep vertices with degree >= 3
         V_out = {v for v in V_in if degrees[v] >= 3}
         
-        print(f"Kept vertices (degree >= 3): {sorted(V_out)}")
-        print(f"Removed vertices (degree < 3): {sorted(V_in - V_out)}")
+        self._log(f"Kept vertices (degree >= 3): {sorted(V_out)}")
+        self._log(f"Removed vertices (degree < 3): {sorted(V_in - V_out)}")
         
         return V_out
     
@@ -222,8 +247,8 @@ class CactusGraphClaude:
         """
         Build final graph from complete graph minus redundant edges
         """
-        print(f"\n=== Building Final Graph ===")
-        print(f"Final vertices: {sorted(V_final)}")
+        self._log(f"\n=== Building Final Graph ===")
+        self._log(f"Final vertices: {sorted(V_final)}")
         
         edges = []
         non_redundant_edges = self._compute_non_redundant_edges(V_final, D_final)
@@ -232,9 +257,9 @@ class CactusGraphClaude:
             weight = D_final[i][j]
             edges.append((i, j, weight))
         
-        print(f"Final edges: {len(edges)}")
+        self._log(f"Final edges: {len(edges)}")
         for u, v, w in edges:
-            print(f"  ({u},{v}) weight={w:.6f}")
+            self._log(f"  ({u},{v}) weight={w:.6f}")
         
         return edges
     
@@ -259,9 +284,9 @@ class CactusGraphClaude:
         
         iteration = 0
         while True:
-            print(f"\n{'='*50}")
-            print(f"ITERATION {iteration}")
-            print(f"{'='*50}")
+            self._log(f"\n{'='*50}")
+            self._log(f"ITERATION {iteration}")
+            self._log(f"{'='*50}")
             
             V_previous = V_current.copy()
             
@@ -272,7 +297,7 @@ class CactusGraphClaude:
             if len(V_compacted) > len(final_V):
                 final_V = V_compacted.copy()
                 final_D = D_compacted.copy()
-                print(f"Updated final graph data: {len(V_compacted)} vertices")
+                self._log(f"Updated final graph data: {len(V_compacted)} vertices")
             
             # Phase 2: Topological Pruning
             V_current = self._topological_pruning(V_compacted, D_compacted)
@@ -285,14 +310,14 @@ class CactusGraphClaude:
                     for u in V_current:
                         D_current[v][u] = D_compacted[v][u]
             
-            print(f"\nIteration {iteration} summary:")
-            print(f"  V_previous: {sorted(V_previous)}")
-            print(f"  V_compacted: {sorted(V_compacted)}")
-            print(f"  V_current: {sorted(V_current)}")
+            self._log(f"\nIteration {iteration} summary:")
+            self._log(f"  V_previous: {sorted(V_previous)}")
+            self._log(f"  V_compacted: {sorted(V_compacted)}")
+            self._log(f"  V_current: {sorted(V_current)}")
             
             # Termination condition: V_current == V_previous
             if V_current == V_previous:
-                print(f"\nTerminating: V_current == V_previous")
+                self._log(f"\nTerminating: V_current == V_previous")
                 break
             
             iteration += 1
@@ -300,12 +325,12 @@ class CactusGraphClaude:
         # Build final graph using vertices from the iteration with maximum vertices
         edges = self._build_final_graph(final_V, final_D)
         
-        print(f"\n=== FINAL RESULT ===")
-        print(f"Total vertices: {len(final_V)}")
-        print(f"Total edges: {len(edges)}")
-        print(f"Initial vertices: {sorted(self.initial_vertices)}")
-        print(f"Final vertices: {sorted(final_V)}")
-        print(f"Auxiliary vertices: {sorted(final_V - self.initial_vertices)}")
+        self._log(f"\n=== FINAL RESULT ===")
+        self._log(f"Total vertices: {len(final_V)}")
+        self._log(f"Total edges: {len(edges)}")
+        self._log(f"Initial vertices: {sorted(self.initial_vertices)}")
+        self._log(f"Final vertices: {sorted(final_V)}")
+        self._log(f"Auxiliary vertices: {sorted(final_V - self.initial_vertices)}")
         
         return edges, final_V, final_D
 
@@ -324,8 +349,8 @@ def read_distance_matrix(filename: str) -> Tuple[int, np.ndarray]:
             
     return n, np.array(distance_matrix)
 
-def save_graph_to_file(graph_edges: List[Tuple[int, int, float]], input_filename: str) -> None:
-    """Save graph to file"""
+def save_graph_to_file(graph_edges: List[Tuple[int, int, float]], input_filename: str, computation_log: List[str]) -> None:
+    """Save graph and computation log to file"""
     base_name = os.path.splitext(input_filename)[0]
     output_filename = f"{base_name}_output_claude.txt"
     
@@ -333,9 +358,19 @@ def save_graph_to_file(graph_edges: List[Tuple[int, int, float]], input_filename
     sorted_edges = sorted([tuple(sorted(e[:2])) + e[2:] for e in graph_edges])
     
     with open(output_filename, 'w') as f:
+        # Write edge list first
         f.write("# u, v, weight\n")
         for u, v, weight in sorted_edges:
             f.write(f"{u}, {v}, {weight}\n")
+        
+        # Write computation process log
+        f.write("\n# COMPUTATION PROCESS LOG\n")
+        f.write("# " + "="*48 + "\n")
+        for line in computation_log:
+            # Handle multi-line entries by splitting on newlines
+            for subline in line.split('\n'):
+                if subline:  # Skip empty lines from split
+                    f.write(f"# {subline}\n")
     
     print(f"Graph saved to {output_filename}")
 
@@ -364,8 +399,60 @@ if __name__ == '__main__':
     edges, vertices, final_D = cactus.compute()
     
     # Save results
-    save_graph_to_file(edges, filename)
+    save_graph_to_file(edges, filename, cactus.computation_log)
     print("Done.")
+    
+    # Verification: Check if computed graph realizes input distance matrix
+    print("\nVerifying graph realizes input distance matrix...")
+    G_verify = nx.Graph()
+    for u, v, weight in edges:
+        G_verify.add_edge(u, v, weight=weight)
+    
+    # Create labels for all vertices in order
+    labels = list(range(len(G_verify)))
+    # Compute all-pairs shortest distances in the constructed graph
+    distances = dict(nx.all_pairs_dijkstra_path_length(G_verify, weight='weight'))
+    # Convert to distance matrix (pandas DataFrame)
+    distance_matrix = pd.DataFrame(distances).transpose().fillna(float('inf'))
+    # Reorder distance matrix by label order
+    distance_matrix = distance_matrix[labels].loc[labels]
+    # Convert to numpy array
+    distance_matrix_np = distance_matrix.values
+    # Trim to original n×n matrix (compare only original vertices)
+    distance_matrix_trimmed = distance_matrix_np[:n, :n]
+    D_original = D[:n, :n]
+    # Compare matrices (with rounding to handle floating point precision)
+    computed_rounded = np.round(distance_matrix_trimmed, 5)
+    original_rounded = np.round(D_original, 5)
+    verification_result = np.array_equal(computed_rounded, original_rounded)
+    
+    if verification_result:
+        print("True")
+        cactus._log("=== VERIFICATION: True ===")
+    else:
+        print("False")
+        cactus._log("=== VERIFICATION: False ===")
+        
+        # Find and report mismatched distances
+        print("\nMismatched distances:")
+        cactus._log("Mismatched distances:")
+        mismatch_count = 0
+        for i in range(n):
+            for j in range(i+1, n):  # Only check upper triangle to avoid duplicates
+                original_dist = original_rounded[i, j]
+                computed_dist = computed_rounded[i, j]
+                if original_dist != computed_dist:
+                    mismatch_count += 1
+                    msg = f"  Vertices ({i},{j}): Expected {original_dist}, Got {computed_dist}"
+                    print(msg)
+                    cactus._log(msg)
+        
+        total_msg = f"Total mismatched pairs: {mismatch_count} out of {n*(n-1)//2} pairs"
+        print(total_msg)
+        cactus._log(total_msg)
+    
+    # Update the saved file with verification result
+    save_graph_to_file(edges, filename, cactus.computation_log)
     
     # Graph visualization
     print("Visualizing graph...")
@@ -387,8 +474,10 @@ if __name__ == '__main__':
     # Color vertices (original vertices black, auxiliary vertices white)
     node_color = ['black' if x < n else 'white' for x in G.nodes()]
     
-    nx.draw_networkx(G, pos=pos, with_labels=False, node_color=node_color, 
-                    edgecolors='black', node_size=20)
+    # Draw graph with vertex labels
+    nx.draw_networkx(G, pos=pos, with_labels=True, node_color=node_color, 
+                    edgecolors='black', node_size=300, font_size=10, font_color='red')
     # Draw edge labels with actual saved weights
     nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edge_labels, font_size=8)
+    plt.title("Final Graph with Vertex Labels\n(Black: Original vertices, White: Auxiliary vertices)")
     plt.show()
