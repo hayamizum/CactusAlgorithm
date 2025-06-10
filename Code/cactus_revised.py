@@ -5,16 +5,258 @@ import os
 import csv
 import networkx as nx
 import matplotlib.pyplot as plt
+from dataclasses import dataclass
+from typing import Set, Tuple, List, Optional
+import logging
 
-# ==================================================================
-# データ読み込み & 保存
-# ==================================================================
+# ロガーの設定
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter('%(message)s'))
+logger.addHandler(handler)
 
-def read_distance_matrix(filename):
+@dataclass
+class CompactificationResult:
+    """Compactification操作の結果を保持するデータクラス"""
+    vertex_set: Set[int]  # 頂点集合
+    distance_matrix: np.ndarray  # 距離行列
+    auxiliary_vertices: Set[int]  # 追加された補助点の集合
+
+class CactusGraph:
     """
-    CSVファイルから距離行列を読み込む。
-    cactus_old.py の readcsv と同等の機能。
+    距離空間からカクタスグラフを構築するクラス
+    
+    Attributes:
+        D (np.ndarray): 距離行列
+        n (int): 入力の頂点数
+        initial_vertices (Set[int]): 初期頂点集合
+        debug (bool): デバッグモードフラグ
     """
+    def __init__(self, distance_matrix: np.ndarray, debug: bool = False):
+        """
+        Args:
+            distance_matrix: n×nの距離行列
+            debug: デバッグ出力を有効にするかどうか
+        """
+        self.D = distance_matrix.copy()
+        self.n = len(distance_matrix)
+        self.initial_vertices = set(range(self.n))
+        self.debug = debug
+        if debug:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+    
+    def _log_state(self, phase: str, V: Set[int], D: np.ndarray) -> None:
+        """現在の状態をログ出力"""
+        if not self.debug:
+            return
+        
+        logger.debug(f"\n=== {phase} ===")
+        logger.debug(f"Vertices: {sorted(list(V))}")
+        logger.debug("Distance Matrix:")
+        with np.printoptions(precision=3, suppress=True):
+            logger.debug(str(D))
+    
+    def _compute_compactification_index(self, v: int, V: Set[int], D: np.ndarray) -> Tuple[float, Optional[Tuple[int, int]]]:
+        """頂点vのcompactification indexとその実現ペアを計算"""
+        if len(V) < 3:
+            return 0.0, None
+            
+        other_vertices = V - {v}
+        min_val = float('inf')
+        min_pair = None
+        
+        for u, w in itertools.combinations(other_vertices, 2):
+            val = (D[v,u] + D[v,w] - D[u,w]) / 2
+            if val < min_val:
+                min_val = val
+                min_pair = (u, w)
+                
+            if self.debug:
+                logger.debug(f"  Checking pair ({u},{w}) for vertex {v}: val = {val}")
+        
+        result = max(0, round(min_val, 5)), min_pair
+        if self.debug:
+            logger.debug(f"  Compactification index for vertex {v}: {result[0]} with pair {result[1]}")
+        return result
+
+    def _full_compactification(self, V: Set[int], D: np.ndarray) -> CompactificationResult:
+        """
+        Full Compactification操作を実行
+        
+        Args:
+            V: 処理対象の頂点集合
+            D: 現在の距離行列
+            
+        Returns:
+            CompactificationResult: 操作結果
+        """
+        self._log_state("Starting Full Compactification", V, D)
+        
+        V_out = V.copy()
+        D_out = D.copy()
+        auxiliary_vertices = set()
+        
+        # 新しい頂点のIDは現在の最大値+1から開始
+        next_vertex_id = max(V_out) + 1
+        
+        for v in list(V):  # Vのコピー上でループ
+            if v not in V_out:  # 同一視で削除された可能性
+                continue
+                
+            alpha_v, pair = self._compute_compactification_index(v, V_out, D_out)
+            if alpha_v <= 1e-9 or pair is None:  # 浮動小数点誤差を考慮
+                continue
+                
+            u, w = pair
+            z = next_vertex_id
+            next_vertex_id += 1
+            
+            if self.debug:
+                logger.debug(f"\nAdding auxiliary vertex {z} for vertex {v}")
+                logger.debug(f"  Based on pair ({u},{w}) with alpha = {alpha_v}")
+            
+            # 距離行列の拡張
+            D_out = np.pad(D_out, ((0,1), (0,1)), mode='constant')
+            
+            # 新頂点zと他の頂点との距離を計算
+            for x in V_out:
+                D_out[x,z] = D_out[z,x] = (D_out[x,u] + D_out[x,w] - D_out[u,w]) / 2
+            D_out[z,z] = 0
+            
+            V_out.add(z)
+            auxiliary_vertices.add(z)
+            
+            self._log_state(f"After adding vertex {z}", V_out, D_out)
+            
+            # 距離0の頂点ペアを同一視
+            while True:
+                zero_pairs = [(i,j) for i,j in itertools.combinations(V_out, 2) 
+                            if abs(D_out[i,j]) < 1e-9]
+                if not zero_pairs:
+                    break
+                    
+                i, j = min(zero_pairs)  # 決定的な結果のため最小のペアを選択
+                if self.debug:
+                    logger.debug(f"\nMerging vertices {j} into {i} (distance = {D_out[i,j]})")
+                
+                # jをiに統合（jを削除）
+                V_out.remove(j)
+                if j in auxiliary_vertices:
+                    auxiliary_vertices.remove(j)
+                
+                # j行j列を削除
+                mask = np.ones(len(D_out), dtype=bool)
+                mask[j] = False
+                D_out = D_out[mask][:,mask]
+                
+                self._log_state("After merging vertices", V_out, D_out)
+        
+        return CompactificationResult(V_out, D_out, auxiliary_vertices)
+
+    def _compute_non_redundant_edges(self, V: Set[int], D: np.ndarray) -> Set[Tuple[int, int]]:
+        """冗長でない辺の集合を計算"""
+        edges = set()
+        for i, j in itertools.combinations(V, 2):
+            is_redundant = False
+            for k in V - {i, j}:
+                if D[i,k] + D[k,j] <= D[i,j] + 1e-9:  # 浮動小数点誤差を考慮
+                    is_redundant = True
+                    break
+            if not is_redundant:
+                edges.add(tuple(sorted((i, j))))
+                
+            if self.debug and not is_redundant:
+                logger.debug(f"  Non-redundant edge found: ({i},{j}) with weight {D[i,j]}")
+                
+        return edges
+
+    def _topological_pruning(self, V: Set[int], D: np.ndarray) -> Set[int]:
+        """
+        次数3以上の頂点および初期頂点を保持
+        
+        Args:
+            V: 頂点集合
+            D: 距離行列
+            
+        Returns:
+            Set[int]: 保持する頂点の集合
+        """
+        self._log_state("Starting Topological Pruning", V, D)
+        
+        edges = self._compute_non_redundant_edges(V, D)
+        if not edges:
+            return set()
+            
+        # 各頂点の次数を計算
+        degrees = {v: 0 for v in V}
+        for u, v in edges:
+            degrees[u] += 1
+            degrees[v] += 1
+            
+        if self.debug:
+            logger.debug("\nVertex degrees:")
+            for v in sorted(V):
+                logger.debug(f"  vertex {v}: degree {degrees[v]}")
+        
+        # 次数3以上または初期頂点を保持
+        result = {v for v in V if degrees[v] >= 3 or v in self.initial_vertices}
+        
+        if self.debug:
+            logger.debug(f"\nKept vertices: {sorted(list(result))}")
+        
+        return result
+
+    def compute(self) -> Tuple[List[Tuple[int, int, float]], Set[int], np.ndarray]:
+        """
+        カクタスグラフを計算
+        
+        Returns:
+            Tuple[List[Tuple[int, int, float]], Set[int], np.ndarray]:
+                - エッジリスト（各エッジは(始点,終点,重み)のタプル）
+                - 最終的な頂点集合
+                - 最終的な距離行列
+        """
+        V_current = self.initial_vertices.copy()
+        D_current = self.D.copy()
+        
+        iteration = 0
+        while True:
+            if self.debug:
+                logger.debug(f"\n=== Iteration {iteration} ===")
+            
+            V_previous = V_current.copy()
+            
+            # フェーズ1: Full Compactification
+            result = self._full_compactification(V_current, D_current)
+            
+            # フェーズ2: Topological Pruning
+            V_current = self._topological_pruning(result.vertex_set, result.distance_matrix)
+            
+            # 距離行列を更新
+            if V_current == V_previous:
+                break
+                
+            indices = sorted(V_current)
+            D_current = result.distance_matrix[np.ix_(indices, indices)]
+            
+            iteration += 1
+        
+        # 最終的なグラフの構築
+        edges = []
+        for i, j in self._compute_non_redundant_edges(result.vertex_set, result.distance_matrix):
+            edges.append((i, j, result.distance_matrix[i,j]))
+        
+        if self.debug:
+            logger.debug("\n=== Final Result ===")
+            logger.debug(f"Vertices: {sorted(list(result.vertex_set))}")
+            logger.debug(f"Edges: {edges}")
+        
+        return edges, result.vertex_set, result.distance_matrix
+
+def read_distance_matrix(filename: str) -> Tuple[int, np.ndarray]:
+    """CSVファイルから距離行列を読み込む"""
     if not filename.endswith('.csv'):
         filename += '.csv'
         
@@ -22,27 +264,20 @@ def read_distance_matrix(filename):
         reader = csv.reader(file)
         n = int(next(reader)[0])
         
-        distance_matrix_list = []
+        distance_matrix = []
         for row in reader:
-            distance_matrix_list.append([float(value) for value in row])
+            distance_matrix.append([float(value) for value in row])
+            
+    return n, np.array(distance_matrix)
 
-    V = set(range(n))
-    D = {i: {j: distance_matrix_list[i][j] for j in range(n)} for i in range(n)}
-    
-    return V, D
-
-def save_graph_to_file(graph_edges, input_filename):
-    """
-    グラフをソート済みの辺リストとしてファイルに保存する。
-    cactus_old.py の save_graph_to_file と同等の機能。
-    出力ファイル名は input_filename に基づいて生成される。
-    """
+def save_graph_to_file(graph_edges: List[Tuple[int, int, float]], input_filename: str) -> None:
+    """グラフをファイルに保存"""
     base_name = os.path.splitext(input_filename)[0]
     output_filename = f"{base_name}_output_revised.txt"
-
-    # 辺リストを u, v の順でソート (u < v)
+    
+    # 辺をソート (u < v)
     sorted_edges = sorted([tuple(sorted(e[:2])) + e[2:] for e in graph_edges])
-
+    
     with open(output_filename, 'w') as f:
         f.write("# u, v, weight\n")
         for u, v, weight in sorted_edges:
@@ -50,210 +285,41 @@ def save_graph_to_file(graph_edges, input_filename):
     
     print(f"Graph saved to {output_filename}")
 
-# ==================================================================
-# アルゴリズム本体
-# ==================================================================
-
-def full_compactification(V_in, D_in):
-    """
-    疑似コードの Full_Compactification 関数に対応。
-    """
-    V_out = V_in.copy()
-    D_out = {k: v.copy() for k, v in D_in.items()}
-
-    # 新しい頂点を識別するための一意なカウンター
-    # 既存の頂点が整数であると仮定し、その最大値から開始する
-    # もし頂点名が文字列の場合は、別の方法が必要
-    new_vertex_counter = max(list(V_out) + [-1]) + 1
-
-    # ループ中に V_out が変化しても、ループの対象は元の V_in のみ
-    for v in list(V_in):
-        if v not in V_out: # ループ中に同一視されて消えた場合はスキップ
-            continue
-
-        # --- compactification index α(v) の計算 ---
-        alpha_v = float('inf')
-        compactification_pair = None
-        
-        other_vertices = V_out - {v}
-        if len(other_vertices) < 2:
-            continue
-
-        for u, w in itertools.combinations(other_vertices, 2):
-            val = (D_out[v][u] + D_out[v][w] - D_out[u][w]) / 2
-            if val < alpha_v:
-                alpha_v = val
-                compactification_pair = (u, w)
-        
-        # --- 補助点の追加 ---
-        # cactus_old.pyでは四捨五入が多用されているが、ここではまず厳密に計算する
-        if alpha_v > 1e-9: # 浮動小数点数の誤差を考慮
-            u, w = compactification_pair
-            z = new_vertex_counter
-            new_vertex_counter += 1
-
-            V_out.add(z)
-            D_out[z] = {}
-            
-            # 補助点zと既存の点xとの距離を定義
-            # d(x,z) = (d(x,u) + d(x,w) - d(u,w)) / 2
-            # この計算には、新しく追加されたz自身も含まれる
-            for x in list(V_out):
-                # xがu,w,zのいずれかの場合の距離を正しく取得する
-                dist_xu = D_out.get(x, {}).get(u, D_out.get(u, {}).get(x))
-                dist_xw = D_out.get(x, {}).get(w, D_out.get(w, {}).get(x))
-                dist_uw = D_out.get(u, {}).get(w, D_out.get(w, {}).get(u))
-
-                dist_xz = (dist_xu + dist_xw - dist_uw) / 2
-                D_out[x][z] = dist_xz
-                D_out[z][x] = dist_xz
-
-            # --- 頂点同一視 ---
-            while True:
-                found_zero_pair = False
-                pair_to_merge = None
-                
-                # 距離が0に近いペアを探す
-                for i, j in itertools.combinations(V_out, 2):
-                    if abs(D_out[i][j]) < 1e-9: # 浮動小数点数の誤差を考慮
-                        pair_to_merge = tuple(sorted((i, j)))
-                        found_zero_pair = True
-                        break
-                
-                if found_zero_pair:
-                    i, j = pair_to_merge # i < j
-                    
-                    # j を i に統合する (j を削除)
-                    V_out.remove(j)
-                    
-                    # D_out から j の行と列を削除
-                    del D_out[j]
-                    for k in D_out:
-                        del D_out[k][j]
-                else:
-                    break # 同一視するペアがなくなったら終了
-    
-    return V_out, D_out
-
-def topological_pruning(V_in, D_in, V_initial):
-    """
-    【この関数は不要になりました】
-    疑似コードの Topological_Pruning 関数に対応。
-    V_initial に含まれる頂点は削除しないように変更。
-    """
-    # --- 冗長でない辺集合 E_non_redundant の構築 ---
-    E_non_redundant = set()
-    for i, j in itertools.combinations(V_in, 2):
-        is_redundant = False
-        # 辺(i,j)が他の頂点kを経由して冗長かどうかを判定
-        for k in V_in - {i, j}:
-            # d(i,k) + d(k,j) <= d(i,j)
-            # 浮動小数点数の誤差を考慮
-            if D_in[i][k] + D_in[k][j] <= D_in[i][j] + 1e-9:
-                is_redundant = True
-                break
-        
-        if not is_redundant:
-            E_non_redundant.add(tuple(sorted((i, j))))
-
-    # --- 次数が3以上の頂点を抽出 ---
-    V_out = set()
-    if not E_non_redundant:
-        return V_out
-
-    # 各頂点の次数を計算
-    degrees = {v: 0 for v in V_in}
-    for u, v in E_non_redundant:
-        degrees[u] += 1
-        degrees[v] += 1
-    
-    for v, degree in degrees.items():
-        # 次数が3以上、または元の頂点であれば維持する
-        if degree >= 3 or v in V_initial:
-            V_out.add(v)
-            
-    return V_out
-
-def build_final_graph(V_final, D_final):
-    """
-    疑似コードの Build_Final_Graph 関数に対応。
-    """
-    final_edges = []
-    for i, j in itertools.combinations(V_final, 2):
-        is_redundant = False
-        for k in V_final - {i, j}:
-            # d(i,k) + d(k,j) <= d(i,j)
-            if D_final[i][k] + D_final[k][j] <= D_final[i][j] + 1e-9:
-                is_redundant = True
-                break
-        
-        if not is_redundant:
-            final_edges.append((i, j, D_final[i][j]))
-            
-    return final_edges
-
-def main(V_initial, D_initial):
-    """
-    疑似コードの Main 関数に対応。
-    中間的なPruningは不要であるという発見に基づき、ロジックを修正。
-    """
-    V_current = V_initial.copy()
-    D_current = D_initial.copy()
-
-    while True:
-        V_previous_size = len(V_current)
-
-        # フェーズ1: Full Compactification & 頂点同一視
-        # これを、頂点数が増えなくなるまで繰り返す
-        V_current, D_current = full_compactification(V_current, D_current)
-
-        # --- 終了条件 ---
-        # Compactificationで頂点数に変化がなければループ終了
-        if len(V_current) == V_previous_size:
-            break
-            
-    # --- 仕上げ: 最終的なグラフの構築 ---
-    # ループで完成した最終的な頂点集合と距離行列を使う
-    final_graph_edges = build_final_graph(V_current, D_current)
-    
-    return final_graph_edges, V_current, D_current
-
-# ==================================================================
-# スクリプト実行のエントリポイント
-# ==================================================================
-
 if __name__ == '__main__':
-    # ユーザーからの入力を受け付ける部分
-    # (cactus_old.py と同様に csv / stdin を選択できるようにする)
+    # ユーザー入力の処理
     mode = input("csv or stdin: ")
     filename = ""
-    n_initial = 0
-
+    
     if mode.lower() in ["csv", "c"]:
         filename = input("File Name: ")
-        V, D = read_distance_matrix(filename)
-        n_initial = len(V)
+        n, D = read_distance_matrix(filename)
     elif mode.lower() in ["stdin", "s"]:
         print("Input n:", end=" ")
-        n_initial = int(input())
+        n = int(input())
         print("Input Distance Matrix: ")
-        D_list = [list(map(float, input().split())) for i in range(n_initial)]
-        V = set(range(n_initial))
-        D = {i: {j: D_list[i][j] for j in range(n_initial)} for i in range(n_initial)}
+        D_list = [list(map(float, input().split())) for _ in range(n)]
+        D = np.array(D_list)
         filename = "stdin_input"
     else:
         print("error: invalid mode")
         exit()
     
+    # デバッグモードの設定
+    debug_mode = input("Enable debug mode? (y/n): ").lower() == 'y'
+    
+    # カクタスグラフの計算
     print("Processing...")
-    final_graph_edges, V_final, D_final = main(V, D)
-    save_graph_to_file(final_graph_edges, filename)
+    cactus = CactusGraph(D, debug=debug_mode)
+    edges, vertices, final_D = cactus.compute()
+    
+    # 結果の保存
+    save_graph_to_file(edges, filename)
     print("Done.")
-
+    
     # --- グラフ描画処理 ---
     print("Visualizing graph...")
     G = nx.Graph()
-    for u, v, weight in final_graph_edges:
+    for u, v, weight in edges:
         G.add_edge(u, v, weight=weight)
 
     # 実際の重みをラベルとして保存
@@ -268,9 +334,9 @@ if __name__ == '__main__':
     pos = nx.kamada_kawai_layout(G)
     
     # 頂点の色分け (元頂点は黒、補助頂点は白)
-    node_color = ['black' if x < n_initial else 'white' for x in G.nodes()]
+    node_color = ['black' if x < n else 'white' for x in G.nodes()]
     
-    nx.draw_networkx(G, pos=pos, with_labels=False, node_color=node_color, edgecolors='black' , node_size=20)
+    nx.draw_networkx(G, pos=pos, with_labels=False, node_color=node_color, edgecolors='black', node_size=20)
     # ラベルは保存しておいた実際の重みで描画する
     nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edge_labels, font_size=8)
     plt.show()
