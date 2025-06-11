@@ -388,17 +388,35 @@ loop = 0
 Slack(X)
 
 
-#部分的構築により要らない辺がある場合があるため要らない辺を切る
-for x, y in itertools.permutations(AllVertices,2): #完全グラフの隣接関係をいれる
-    Adj_opt[x,y] = 1
-    for z in AllVertices-{x,y}: #隣接していないものを切る
+# ---- この部分は以下のコードに置き換える -----
+# #部分的構築により要らない辺がある場合があるため要らない辺を切る
+# for x, y in itertools.permutations(AllVertices,2): #完全グラフの隣接関係をいれる
+#     Adj_opt[x,y] = 1
+#     for z in AllVertices-{x,y}: #隣接していないものを切る
+#         if D[x,z]+D[z,y] == D[x,y] and D[x,z] != 0 and D[z,y] != 0:
+#             Adj_opt[x,y] = Adj_opt[y,x] =0
+# #Graphの定義
+# G = nx.Graph(Adj_opt)
+# for x,y in itertools.permutations(AllVertices,2):
+#     if Adj_opt[x][y]==1:
+#         G[x][y]['weight'] = round(D[x,y],5)
+# 
+# ----- 実験：上記の部分を以下のコードにおきかえてみる（Adj_optを初期化するのではなくAdj_outputを作りなおす） -----
+# V上の距離空間Dを実現する完全グラフから冗長な辺を削除して出力する
+# Adj_outputを作る
+Adj_output = np.ones((len(AllVertices), len(AllVertices))) # 完全グラフの隣接関係で初期化
+np.fill_diagonal(Adj_output, 0)
+for x, y in itertools.permutations(AllVertices,2):
+    Adj_output[x,y] = 1
+    for z in AllVertices-{x,y}: # 冗長辺を削除
         if D[x,z]+D[z,y] == D[x,y] and D[x,z] != 0 and D[z,y] != 0:
-            Adj_opt[x,y] = Adj_opt[y,x] =0
+            Adj_output[x,y] = Adj_output[y,x] =0
 
 #Graphの定義
-G = nx.Graph(Adj_opt)
+G = nx.Graph(Adj_output)
+# 辺の重みを設定
 for x,y in itertools.permutations(AllVertices,2):
-    if Adj_opt[x][y]==1:
+    if Adj_output[x][y]==1:
         G[x][y]['weight'] = round(D[x,y],5)
 
 edge_labels = nx.get_edge_attributes(G, 'weight')
@@ -428,7 +446,7 @@ else:
 
 #重みを考慮した配置にしたい場合は以下の三行をコメントアウト
 for x,y in itertools.permutations(AllVertices,2):
-    if Adj_opt[x][y]==1:
+    if Adj_output[x][y]==1:
         G[x][y]['weight'] = 1
 pos = nx.kamada_kawai_layout(G)
 node_color = ['black' if x < n else 'white' for x in AllVertices]
