@@ -337,11 +337,20 @@ def Slack(V):
     V_del = SetDelete(V_del, Delete_list)
     Slack_del = SetDelete(Slack_del, Delete_list)
     
-    if loop==1:
-        Slack(AllVertices)
-    elif len(AllVertices.difference(Slack_del))>0: # Slack_delに含まれない新規頂点が発生しなくなるまでSlackを再帰的に呼び出す
-        Slack(AllVertices.difference(Slack_del))
-
+    # if loop==1:
+    #     Slack(AllVertices)
+    # elif len(AllVertices.difference(Slack_del))>0: # Slack_delに含まれない新規頂点が発生しなくなるまでSlackを再帰的に呼び出す
+    #     Slack(AllVertices.difference(Slack_del)) # (A) compactificationで生じた新規頂点があればTrue, Falseなら再帰終了
+    # ───────────── ここから置き換え ─────────────
+    V_active = AllVertices.difference(Slack_del)              # (A) compactificationで生じた新規頂点があればTrue
+    need_degree_cut = any(CountNeighbor(v, Adj_opt) <= 2      # (B) 未処理頂点に次数2以下の頂点が残っているか
+                          for v in V_active)
+    if loop == 1:
+        Slack(AllVertices)                                    # 2 回目は必ず呼ぶ
+    elif V_active or need_degree_cut:                        # (A) or (B)
+        Slack(V_active)                                       # 条件を満たす限り再帰
+    # どちらも偽になれば停止（しかしAだけでも停止条件として十分かもしれない）
+    # ───────────── ここまで ─────────────
 
 
 #Input
