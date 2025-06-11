@@ -1,5 +1,3 @@
-#Constructing Cactus
-#
 #written by Keita Watanabe, Waseda university
 #2023.1.16
 #
@@ -212,17 +210,17 @@ def mkAdj(V):
     isDeleted = 0
 
     for x in V:
-        if CountNeighbor(x, Adj)==0:
+        if CountNeighbor(x, Adj)==0: #次数0の頂点を削除
             isDeleted = 1
             V_del.add(x)
-        elif CountNeighbor(x, Adj)==1:
+        elif CountNeighbor(x, Adj)==1: #次数1の頂点を削除
             isDeleted = 1
             for i in range(len(Adj)):
                 if Adj[x,i]==1:
                     u = i
             Adj_opt[x,u] = Adj_opt[u,x] = 1
             V_del.add(x)
-        elif CountNeighbor(x, Adj)==2:
+        elif CountNeighbor(x, Adj)==2: #次数2の頂点を削除
             isDeleted = 1
             Neighbor = set()
             for i in range(len(Adj)):
@@ -234,7 +232,7 @@ def mkAdj(V):
             Adj_opt[x,v] = Adj_opt[v,x] = 1
             V_del.add(x)
 
-    for x in V_del:
+    for x in V_del: #削除された頂点の隣接関係を切る
         for y in V.union(V_del):
             Adj[x,y] = Adj[y,x] = 0
 
@@ -341,7 +339,7 @@ def Slack(V):
     
     if loop==1:
         Slack(AllVertices)
-    elif len(AllVertices.difference(Slack_del))>0:
+    elif len(AllVertices.difference(Slack_del))>0: # Slack_delに含まれない新規頂点が発生しなくなるまでSlackを再帰的に呼び出す
         Slack(AllVertices.difference(Slack_del))
 
 
